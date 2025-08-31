@@ -57,13 +57,31 @@ const ChatPage = () => {
   return (
     <div className="flex flex-col h-screen text-white bg-gray-900">
       <ChatHeader onNewChat={handleNewChat} />
-      <MessageList messages={messages} isLoading={isLoading} />
-      <MessageInput
-        input={input}
-        setInput={setInput}
-        handleSend={handleSend}
-        isLoading={isLoading}
-      />
+      {messages.length === 0 && !isLoading ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+            How can Dom help you today?
+          </h1>
+          <div className="w-full max-w-4xl mt-8">
+            <MessageInput
+              input={input}
+              setInput={setInput}
+              handleSend={handleSend}
+              isLoading={isLoading}
+            />
+          </div>
+        </div>
+      ) : (
+        <>
+          <MessageList messages={messages} isLoading={isLoading} />
+          <MessageInput
+            input={input}
+            setInput={setInput}
+            handleSend={handleSend}
+            isLoading={isLoading}
+          />
+        </>
+      )}
     </div>
   );
 };

@@ -1,27 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Message from './Message';
 import LoadingIndicator from './LoadingIndicator';
 
 const MessageList = ({ messages, isLoading }) => {
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
     <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-4xl mx-auto h-full">
-        {messages.length === 0 && !isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <h1 className="text-4xl font-bold text-gray-500">
-              How can Dom help you today?
-            </h1>
-          </div>
-        ) : (
-          messages.map((message) => <Message key={message.id} message={message} />)
-        )}
-        {isLoading && (
-          <div className="flex mb-4 justify-start">
-            <div className="rounded-lg p-3 max-w-4xl bg-gray-700">
-              <LoadingIndicator />
-            </div>
-          </div>
-        )}
+      <div className="max-w-4xl mx-auto">
+        {messages.map((message) => (
+          <Message key={message.id} message={message} />
+        ))}
+        {isLoading && <LoadingIndicator />}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );

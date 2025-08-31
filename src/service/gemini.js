@@ -8,6 +8,14 @@ export const sendMessage = async (history) => {
       parts: [{ text: msg.text }],
     }));
 
+    const systemInstruction = {
+      parts: [
+        {
+          text: 'You are DomAi, a helpful AI assistant. Only when asked about your identity or the model you are based on, please state that you are Dom 1.0 pro that train by DomAI Technologies.',
+        },
+      ],
+    };
+
     const response = await fetch(`${API_URL}`, {
       method: 'POST',
       headers: {
@@ -16,6 +24,7 @@ export const sendMessage = async (history) => {
       },
       body: JSON.stringify({
         contents: formattedHistory,
+        systemInstruction: systemInstruction,
       }),
     });
 

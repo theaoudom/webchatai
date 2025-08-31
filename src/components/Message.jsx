@@ -17,6 +17,14 @@ const Message = ({ message }) => {
     >
       {isModel && (
         <div className="w-8 h-8 bg-purple-500 rounded-full flex-shrink-0"></div>
+        // <div className="w-8 h-8 bg-purple-500 rounded-full flex-shrink-0 flex items-center justify-center">
+        //   <Image
+        //     src="/image/logo/Icon_chat.svg"
+        //     alt="DomAI Icon"
+        //     width={20}
+        //     height={20}
+        //   />
+        // </div>
       )}
       <div
         className={`p-4 rounded-2xl max-w-lg ${

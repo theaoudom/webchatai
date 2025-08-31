@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "DomAI",
   description: "The future of intelligent conversation is here.",
+  icons: {
+    icon: '/image/logo/Icon_chat.svg',
+  },
 };
 
 export default function RootLayout({ children }) {
