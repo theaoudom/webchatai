@@ -30,16 +30,28 @@ const ChatPage = () => {
     setMessages(newMessages);
     setInput('');
 
-    const modelResponse = await sendMessage(newMessages);
+    try {
+      const modelResponse = await sendMessage(newMessages);
 
-    const modelMessage = {
-      id: newMessages.length + 1,
-      text: modelResponse,
-      sender: 'model',
-    };
+      const modelMessage = {
+        id: newMessages.length + 1,
+        text: modelResponse,
+        sender: 'model',
+      };
 
-    setMessages((prevMessages) => [...prevMessages, modelMessage]);
-    setIsLoading(false);
+      setMessages((prevMessages) => [...prevMessages, modelMessage]);
+    } catch (error) {
+      console.error(error);
+      const errorMessage = {
+        id: newMessages.length + 1,
+        text: 'Error: Unable to get a response from the model. Please check the configuration.',
+        sender: 'model',
+        isError: true,
+      };
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -7,18 +7,23 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Message = ({ message }) => {
+  const isModel = message.sender === 'model';
+
   return (
     <div
-      className={`flex mb-4 ${
-        message.sender === 'user' ? 'justify-end' : 'justify-start'
+      className={`flex items-start gap-3 my-4 ${
+        isModel ? 'justify-start' : 'justify-end'
       }`}
     >
+      {isModel && (
+        <div className="w-8 h-8 bg-purple-500 rounded-full flex-shrink-0"></div>
+      )}
       <div
-        className={`p-3 rounded-2xl ${
-          message.sender === 'user'
-            ? 'max-w-lg bg-blue-600 rounded-br-none'
-            : 'max-w-4xl bg-gray-700 rounded-bl-none'
-        }`}
+        className={`p-4 rounded-2xl max-w-lg ${
+          isModel
+            ? 'bg-gray-700 rounded-tl-none'
+            : 'bg-blue-600 rounded-br-none text-white'
+        } ${message.isError ? 'bg-red-500/20 border border-red-500/50' : ''}`}
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
