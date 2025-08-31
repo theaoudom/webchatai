@@ -1,5 +1,6 @@
 'use client';
 
+import 'regenerator-runtime/runtime';
 import React, { useState } from 'react';
 import ChatHeader from '../../components/ChatHeader';
 import { sendMessage } from '../../service/gemini';

@@ -55,3 +55,47 @@ code:not([class*="language-"]) {
 a {
   color: inherit;
 }
+
+.markdown-content h3 {
+  @apply text-xl font-semibold mt-6 mb-3 border-b border-gray-600 pb-2;
+}
+
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol {
+  @apply text-base leading-relaxed mb-4;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply pl-5;
+}
+
+.markdown-content li {
+  @apply mb-2;
+}
+
+.markdown-content code:not([class*="language-"]) {
+  @apply bg-gray-800 text-purple-300 px-2 py-1 rounded-md text-sm;
+}
+
+.markdown-content pre {
+  @apply my-4;
+}
+
+.markdown-content hr {
+  @apply my-8 border-gray-700;
+}
+
+/* Styles for user messages */
+.user-message-markdown h3 {
+  @apply border-b border-blue-400;
+}
+
+.user-message-markdown code:not([class*='language-']) {
+  @apply bg-blue-700 text-white;
+}
+
+.user-message-markdown hr {
+  @apply border-blue-400;
+}

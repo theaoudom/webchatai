@@ -59,16 +59,16 @@ export const homeData = {
       {
         quote:
           'DomAI has completely transformed how our team approaches research. The ability to get instant, detailed answers is a game-changer.',
-        author: 'Jane Doe',
+        author: 'Sok Sinoun',
         title: 'Project Manager, TechCorp',
-        avatar: 'JD',
+        avatar: 'SN',
       },
       {
         quote:
           "As a content creator, I'm constantly brainstorming. DomAI is my go-to partner for exploring new ideas and overcoming writer's block.",
-        author: 'John Smith',
+        author: 'Sok Sinoun',
         title: 'Content Strategist, Creative Co.',
-        avatar: 'JS',
+        avatar: 'SN',
       },
       {
         quote:
