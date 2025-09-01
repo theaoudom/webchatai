@@ -1,17 +1,23 @@
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const API_URL = process.env.NEXT_PUBLIC_GEMINI_API_URL;
 
-export const sendMessage = async (history) => {
+let conversationHistory = [];
+
+export const startNewChat = () => {
+  conversationHistory = [];
+};
+
+export const sendMessage = async (newMessage) => {
   try {
-    const formattedHistory = history.map((msg) => ({
-      role: msg.sender,
-      parts: [{ text: msg.text }],
-    }));
+    conversationHistory.push({
+      role: 'user',
+      parts: [{ text: newMessage }],
+    });
 
     const systemInstruction = {
       parts: [
         {
-          text: 'You are DomAi, a helpful AI assistant. Only when asked about your identity or the model you are based on, please state that you are Dom 1.0 pro that train by DomAI Technologies.',
+          text: 'You are DomAi, a helpful and and friendly AI assistant. Only when asked about your identity or the model you are based on, please state that you are Dom 1.0 pro that train by DomAI Technologies.',
         },
       ],
     };
@@ -23,7 +29,7 @@ export const sendMessage = async (history) => {
         'X-goog-api-key': `${API_KEY}`,
       },
       body: JSON.stringify({
-        contents: formattedHistory,
+        contents: conversationHistory,
         systemInstruction: systemInstruction,
       }),
     });
@@ -33,7 +39,14 @@ export const sendMessage = async (history) => {
     }
 
     const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    const modelResponse = data.candidates[0].content.parts[0].text;
+
+    conversationHistory.push({
+      role: 'model',
+      parts: [{ text: modelResponse }],
+    });
+
+    return modelResponse;
   } catch (error) {
     console.error('Error sending message:', error);
     return 'Error: Unable to get a response from the model.';

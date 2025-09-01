@@ -3,17 +3,22 @@
 import 'regenerator-runtime/runtime';
 import React, { useState } from 'react';
 import ChatHeader from '../../components/ChatHeader';
-import { sendMessage } from '../../service/gemini';
+import { sendMessage, startNewChat } from '../../service/gemini';
 import MessageList from '../../components/MessageList';
 import MessageInput from '../../components/MessageInput';
+import SettingsDialog from '../../components/SettingsDialog';
+import { useTheme } from '../../context/ThemeContext';
 
 const ChatPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { theme } = useTheme();
 
   const handleNewChat = () => {
     setMessages([]);
+    startNewChat();
   };
 
   const handleSend = async () => {
@@ -29,10 +34,11 @@ const ChatPage = () => {
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
+    const userInput = input;
     setInput('');
 
     try {
-      const modelResponse = await sendMessage(newMessages);
+      const modelResponse = await sendMessage(userInput);
 
       const modelMessage = {
         id: newMessages.length + 1,
@@ -56,8 +62,24 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen text-white bg-gray-900">
-      <ChatHeader onNewChat={handleNewChat} />
+    <div
+      className={`flex flex-col h-screen ${
+        theme === 'dark' ? 'aurora-background' : ''
+      }`}
+      style={{
+        backgroundColor: 'var(--background)',
+        color: 'var(--foreground)',
+        transition: 'background-color 0.3s ease, color 0.3s ease',
+      }}
+    >
+      <ChatHeader
+        onNewChat={handleNewChat}
+        onSettingsClick={() => setIsSettingsOpen(true)}
+      />
+      <SettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
       {messages.length === 0 && !isLoading ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">

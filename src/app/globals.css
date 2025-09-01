@@ -1,46 +1,74 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 14, 20, 40;
-    --background-end-rgb: 10, 10, 20;
-  }
+:root {
+  --background-rgb: 10, 10, 15;
+  --foreground-rgb: 255, 255, 255;
+  --background: #0a0a0f;
+  --foreground: #ffffff;
+  --primary: #6b21a8; /* Purple */
+  --secondary: #1d4ed8; /* Blue */
+  --accent: #db2777; /* Pink */
+  --muted: #111827; /* Darker Gray */
+  --placeholder: rgba(255, 255, 255, 0.5);
+  --accent-foreground: #ffffff;
+}
+
+.light {
+  --background-rgb: 255, 255, 255;
+  --foreground-rgb: 17, 24, 39;
+  --background: #ffffff;
+  --foreground: #111827;
+  --primary: #6b21a8;
+  --secondary: #1d4ed8;
+  --accent: #db2777;
+  --muted: #f3f4f6;
+  --placeholder: rgba(17, 24, 39, 0.5);
+  --accent-foreground: #ffffff;
+}
+
+.pink {
+  --background-rgb: 252, 231, 243;
+  --foreground-rgb: 131, 24, 67;
+  --background: #fce7f3;
+  --foreground: #831843;
+  --primary: #db2777;
+  --secondary: #9d174d;
+  --accent: #c026d3;
+  --muted: #fbcfe8;
+  --placeholder: rgba(131, 24, 67, 0.5);
+  --accent-foreground: #fef1f7; /* A very light pink */
+}
+
+.blue {
+  --background-rgb: 219, 234, 254;
+  --foreground-rgb: 30, 58, 138;
+  --background: #dbeafe;
+  --foreground: #1e3a8a;
+  --primary: #2563eb;
+  --secondary: #1d4ed8;
+  --accent: #3b82f6;
+  --muted: #bfdbfe;
+  --placeholder: rgba(30, 58, 138, 0.5);
+  --accent-foreground: #f0f9ff; /* A very light blue */
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: #0a0a0f;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-code:not([class*="language-"]) {
-  @apply bg-gray-800 text-white px-2 py-0.5 rounded-md;
-}
+/* Add other global styles here, using the CSS variables */
 
-@keyframes pulse-fast {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-.animate-pulse-fast {
-  animation: pulse-fast 1.4s infinite;
+.themed-placeholder::placeholder {
+  color: var(--placeholder);
 }
 
 @keyframes aurora {
@@ -52,50 +80,17 @@ code:not([class*="language-"]) {
   }
 }
 
-a {
-  color: inherit;
-}
-
-.markdown-content h3 {
-  @apply text-xl font-semibold mt-6 mb-3 border-b border-gray-600 pb-2;
-}
-
-.markdown-content p,
-.markdown-content ul,
-.markdown-content ol {
-  @apply text-base leading-relaxed mb-4;
-}
-
-.markdown-content ul,
-.markdown-content ol {
-  @apply pl-5;
-}
-
-.markdown-content li {
-  @apply mb-2;
-}
-
-.markdown-content code:not([class*="language-"]) {
-  @apply bg-gray-800 text-purple-300 px-2 py-1 rounded-md text-sm;
-}
-
-.markdown-content pre {
-  @apply my-4;
-}
-
-.markdown-content hr {
-  @apply my-8 border-gray-700;
-}
-
-/* Styles for user messages */
-.user-message-markdown h3 {
-  @apply border-b border-blue-400;
-}
-
-.user-message-markdown code:not([class*='language-']) {
-  @apply bg-blue-700 text-white;
-}
-
-.user-message-markdown hr {
-  @apply border-blue-400;
+.aurora-background {
+  background-image: radial-gradient(
+      at 27% 37%,
+      hsla(215, 98%, 61%, 0.1) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 98%, 76%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(256, 96%, 68%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 0.1) 0px, transparent 50%);
+  animation: aurora 20s infinite linear;
 }

@@ -12,11 +12,14 @@ const MessageInput = ({ input, setInput, handleSend, isLoading }) => {
   return (
     <div className="p-4 bg-transparent">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center bg-gray-800 rounded-full p-2 shadow-md">
+        <div
+          className="flex items-center rounded-full p-2 shadow-md"
+          style={{ backgroundColor: 'var(--muted)' }}
+        >
           <input
             type="text"
             placeholder={isLoading ? 'Loading...' : 'Type your message...'}
-            className="flex-1 bg-transparent focus:outline-none px-4"
+            className="flex-1 bg-transparent focus:outline-none px-4 themed-placeholder"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
@@ -25,7 +28,11 @@ const MessageInput = ({ input, setInput, handleSend, isLoading }) => {
           <div className="flex items-center gap-2">
             <MicrophoneButton onTranscriptChange={handleTranscriptChange} />
             <button
-              className="bg-blue-600 rounded-full p-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-full p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--secondary)',
+                color: 'var(--background)',
+              }}
               onClick={handleSend}
               disabled={isLoading}
             >

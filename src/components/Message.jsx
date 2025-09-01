@@ -4,11 +4,16 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {
+  vscDarkPlus,
+  prism,
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import MessageActions from './MessageActions';
+import { useTheme } from '../context/ThemeContext';
 
 const Message = ({ message }) => {
   const isModel = message.sender === 'model';
+  const { theme } = useTheme();
 
   return (
     <div
@@ -17,31 +22,15 @@ const Message = ({ message }) => {
       }`}
     >
       {isModel && (
-        <div className="w-8 h-8 bg-purple-500 rounded-full flex-shrink-0"></div>
-        // <div className="w-8 h-8 bg-purple-500 rounded-full flex-shrink-0 flex items-center justify-center">
-        //   <Image
-        //     src="/image/logo/Icon_chat.svg"
-        //     alt="DomAI Icon"
-        //     width={20}
-        //     height={20}
-        //   />
-        // </div>
+        <div
+          className="w-8 h-8 rounded-full flex-shrink-0"
+          style={{ backgroundColor: 'var(--primary)' }}
+        ></div>
       )}
       <div className="flex flex-col items-start">
-        <div
-          className={`p-4 rounded-2xl ${
-            isModel ? 'max-w-4xl' : 'max-w-lg'
-          } ${
-            isModel
-              ? 'bg-gray-700 rounded-tl-none'
-              : 'bg-blue-600 rounded-br-none text-white'
-          } ${message.isError ? 'bg-red-500/20 border border-red-500/50' : ''}`}
-        >
-          <div
-            className={`markdown-content ${
-              !isModel ? 'user-message-markdown' : ''
-            }`}
-          >
+        {isModel ? (
+          <div className="markdown-content max-w-4xl">
+            {/* Model message has no background */}
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -58,30 +47,56 @@ const Message = ({ message }) => {
                   };
 
                   return !inline && match ? (
-                    <div className="relative my-4 overflow-hidden rounded-lg border border-gray-700 bg-gray-900">
-                      <div className="flex items-center justify-between bg-gray-800 px-4 py-2">
-                        <span className="text-sm font-semibold text-gray-400">
+                    <div
+                      className="relative my-4 overflow-hidden rounded-lg border"
+                      style={{
+                        backgroundColor: 'var(--muted)',
+                        borderColor: `rgba(var(--foreground-rgb), 0.1)`,
+                      }}
+                    >
+                      <div
+                        className="flex items-center justify-between px-4 py-2"
+                        style={{
+                          backgroundColor: `rgba(var(--foreground-rgb), 0.05)`,
+                        }}
+                      >
+                        <span className="text-sm font-semibold">
                           {match[1]}
                         </span>
                         <button
-                          className="rounded bg-gray-700 px-2 py-1 text-xs font-semibold text-gray-300 hover:bg-gray-600"
+                          className="rounded px-2 py-1 text-xs font-semibold"
+                          style={{
+                            backgroundColor: `rgba(var(--foreground-rgb), 0.1)`,
+                          }}
                           onClick={handleCopy}
                         >
                           {copied ? 'Copied!' : 'Copy'}
                         </button>
                       </div>
                       <SyntaxHighlighter
-                        style={vscDarkPlus}
+                        style={theme === 'dark' ? vscDarkPlus : prism}
                         language={match[1]}
                         PreTag="div"
-                        customStyle={{ backgroundColor: '#111827' }}
+                        customStyle={{
+                          backgroundColor: 'transparent',
+                          margin: 0,
+                          padding: '1rem',
+                        }}
                         {...props}
                       >
                         {codeString}
                       </SyntaxHighlighter>
                     </div>
                   ) : (
-                    <code className={className} {...props}>
+                    <code
+                      className={className}
+                      {...props}
+                      style={{
+                        backgroundColor: 'var(--muted)',
+                        padding: '0.2rem 0.4rem',
+                        borderRadius: '0.25rem',
+                      }}
+                    >
                       {children}
                     </code>
                   );
@@ -91,7 +106,21 @@ const Message = ({ message }) => {
               {message.text}
             </ReactMarkdown>
           </div>
-        </div>
+        ) : (
+          <div
+            className={`px-4 py-2 rounded-xl max-w-lg rounded-br-none`}
+            style={{
+              backgroundColor: 'var(--secondary)',
+              color: 'var(--accent-foreground)',
+            }}
+          >
+            <div className="markdown-content user-message-markdown">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.text}
+              </ReactMarkdown>
+            </div>
+          </div>
+        )}
         {isModel && <MessageActions message={message} />}
       </div>
     </div>
