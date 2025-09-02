@@ -10,7 +10,7 @@ const SpeakerButton = ({ text }) => {
   return (
     <button
       onClick={handleToggleSpeak}
-      className="hover:text-white transition-colors"
+      className="transition-colors hover:text-[color:var(--foreground)]"
       aria-label={isSpeaking ? 'Stop speaking' : 'Start speaking'}
     >
       {isSpeaking ? <FaStopCircle className="text-blue-500" /> : <FaVolumeUp />}

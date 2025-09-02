@@ -22,11 +22,13 @@ const MessageActions = ({ message }) => {
   };
 
   return (
-    <div className="flex items-center gap-4 mt-2 text-gray-400">
+    <div className="flex items-center gap-4 mt-2 text-[color:rgba(var(--foreground-rgb),0.6)]">
       <button
         onClick={handleCopy}
         className={`transition-colors ${
-          isCopied ? 'text-green-500' : 'hover:text-white'
+          isCopied
+            ? 'text-green-500'
+            : 'hover:text-[color:var(--foreground)]'
         }`}
         aria-label="Copy message"
         disabled={isCopied}
@@ -36,7 +38,9 @@ const MessageActions = ({ message }) => {
       <button
         onClick={() => handleFeedback('liked')}
         className={`transition-colors ${
-          feedback === 'liked' ? 'text-blue-500' : 'hover:text-white'
+          feedback === 'liked'
+            ? 'text-blue-500'
+            : 'hover:text-[color:var(--foreground)]'
         }`}
         aria-label="Like message"
       >
@@ -45,7 +49,9 @@ const MessageActions = ({ message }) => {
       <button
         onClick={() => handleFeedback('disliked')}
         className={`transition-colors ${
-          feedback === 'disliked' ? 'text-red-500' : 'hover:text-white'
+          feedback === 'disliked'
+            ? 'text-red-500'
+            : 'hover:text-[color:var(--foreground)]'
         }`}
         aria-label="Dislike message"
       >

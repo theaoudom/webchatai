@@ -16,6 +16,7 @@ const SettingsDialog = ({ isOpen, onClose }) => {
     { name: 'light', color: '#f3f4f6' }, // gray
     { name: 'pink', color: '#ec4899' }, // pink
     { name: 'blue', color: '#3b82f6' }, // blue
+    { name: 'purple', color: '#a855f7' }, // purple
   ];
 
   const appVersion = '0.1.0';

@@ -14,7 +14,7 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('dark', 'light', 'pink', 'blue');
+    root.classList.remove('dark', 'light', 'pink', 'blue', 'purple');
     root.classList.add(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
