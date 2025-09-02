@@ -29,7 +29,7 @@ const Message = ({ message }) => {
       )}
       <div className="flex flex-col items-start">
         {isModel ? (
-          <div className="markdown-content max-w-4xl">
+          <div className="markdown-content max-w-sm md:max-w-3xl">
             {/* Model message has no background */}
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
@@ -108,7 +108,7 @@ const Message = ({ message }) => {
           </div>
         ) : (
           <div
-            className={`px-4 py-2 rounded-xl max-w-lg rounded-br-none`}
+            className={`px-4 py-2 rounded-xl max-w-sm md:max-w-3xl rounded-br-none`}
             style={{
               backgroundColor: 'var(--secondary)',
               color: 'var(--accent-foreground)',
