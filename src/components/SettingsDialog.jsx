@@ -19,7 +19,7 @@ const SettingsDialog = ({ isOpen, onClose }) => {
     { name: 'purple', color: '#a855f7' }, // purple
   ];
 
-  const appVersion = '0.1.0';
+  const appVersion = '0.1.2';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

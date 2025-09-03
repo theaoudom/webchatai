@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import MicrophoneButton from './MicrophoneButton';
 
 const MessageInput = ({ input, setInput, handleSend, isLoading }) => {
@@ -9,6 +9,15 @@ const MessageInput = ({ input, setInput, handleSend, isLoading }) => {
     [setInput]
   );
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!isLoading) {
+        handleSend();
+      }
+    }
+  };
+
   return (
     <div className="p-4 bg-transparent">
       <div className="max-w-4xl mx-auto">
@@ -16,13 +25,13 @@ const MessageInput = ({ input, setInput, handleSend, isLoading }) => {
           className="flex items-center rounded-full p-2 shadow-md"
           style={{ backgroundColor: 'var(--muted)' }}
         >
-          <input
-            type="text"
+          <textarea
+            rows={1}
             placeholder={isLoading ? 'Loading...' : 'Type your message...'}
-            className="flex-1 bg-transparent focus:outline-none px-4 themed-placeholder"
+            className="flex-1 bg-transparent focus:outline-none px-4 themed-placeholder resize-none"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+            onKeyDown={handleKeyDown}
             disabled={isLoading}
           />
           <div className="flex items-center gap-2">

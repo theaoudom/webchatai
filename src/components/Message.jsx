@@ -18,7 +18,7 @@ const Message = ({ message }) => {
   return (
     <div
       className={`flex items-start gap-3 my-4 ${
-        isModel ? 'justify-start' : 'justify-end'
+        isModel ? 'justify-start' : `group justify-end`
       }`}
     >
       {isModel && (
@@ -27,7 +27,7 @@ const Message = ({ message }) => {
           style={{ backgroundColor: 'var(--primary)' }}
         ></div>
       )}
-      <div className="flex flex-col items-start">
+      <div className={`flex flex-col ${isModel ? 'items-start' : 'items-end'}`}>
         {isModel ? (
           <div className="markdown-content max-w-sm md:max-w-3xl">
             {/* Model message has no background */}
@@ -121,7 +121,7 @@ const Message = ({ message }) => {
             </div>
           </div>
         )}
-        {isModel && <MessageActions message={message} />}
+        <MessageActions message={message} isUserMessage={!isModel} />
       </div>
     </div>
   );

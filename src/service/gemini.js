@@ -7,7 +7,7 @@ export const startNewChat = () => {
   conversationHistory = [];
 };
 
-export const sendMessage = async (newMessage) => {
+export const sendMessage = async (newMessage, signal) => {
   try {
     conversationHistory.push({
       role: 'user',
@@ -32,6 +32,7 @@ export const sendMessage = async (newMessage) => {
         contents: conversationHistory,
         systemInstruction: systemInstruction,
       }),
+      signal,
     });
 
     if (!response.ok) {
@@ -48,6 +49,10 @@ export const sendMessage = async (newMessage) => {
 
     return modelResponse;
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Fetch aborted');
+      return null;
+    }
     console.error('Error sending message:', error);
     return 'Error: Unable to get a response from the model.';
   }
