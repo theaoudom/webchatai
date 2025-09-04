@@ -10,6 +10,7 @@ import SettingsDialog from '../../components/SettingsDialog';
 import HistorySidebar from '../../components/HistorySidebar';
 import { useTheme } from '../../context/ThemeContext';
 import { saveOrUpdateChat, getHistory, deleteChat } from '../../service/chatHistory';
+import DownloadBanner from '../../components/DownloadBanner';
 
 const ChatPage = () => {
   const [messages, setMessages] = useState([]);
@@ -18,10 +19,24 @@ const ChatPage = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [history, setHistory] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [activeChatId, setActiveChatId] = useState(null);
   const { theme } = useTheme();
   const abortControllerRef = useRef(null);
   const lastSavedMessages = useRef(null);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const mobile = window.innerWidth < 768; // Tailwind's md breakpoint
+      setIsMobile(mobile);
+      setIsSidebarOpen(!mobile);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     setHistory(getHistory());
@@ -149,18 +164,29 @@ const ChatPage = () => {
         transition: 'background-color 0.3s ease, color 0.3s ease',
       }}
     >
+      {isMobile && isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-black/50"
+          aria-hidden="true"
+        />
+      )}
       <HistorySidebar
         isOpen={isSidebarOpen}
+        isMobile={isMobile}
         history={history}
         onLoadChat={handleLoadChat}
         onNewChat={handleNewChat}
         activeChatId={activeChatId}
         onDeleteChat={handleDeleteChat}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader
           onSettingsClick={() => setIsSettingsOpen(true)}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+          isMobile={isMobile}
         />
         <SettingsDialog
           isOpen={isSettingsOpen}
@@ -194,6 +220,7 @@ const ChatPage = () => {
           )}
         </div>
       </div>
+      <DownloadBanner />
     </div>
   );
 };

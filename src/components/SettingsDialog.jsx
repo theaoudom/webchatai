@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { FaTimes } from 'react-icons/fa';
+import Link from 'next/link';
+import { FaTimes, FaMobileAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
 const SettingsDialog = ({ isOpen, onClose }) => {
@@ -54,6 +55,14 @@ const SettingsDialog = ({ isOpen, onClose }) => {
               />
             ))}
           </div>
+        </div>
+
+        <div className="mt-8">
+          <h3 className="text-lg font-medium mb-4">Mobile App</h3>
+          <Link href="/store" className="w-full flex items-center justify-center bg-[rgba(var(--foreground-rgb),0.05)] hover:bg-[rgba(var(--foreground-rgb),0.1)] text-[var(--foreground)] font-bold py-3 px-4 rounded-lg transition-colors duration-300">
+            <FaMobileAlt className="mr-3" />
+            Download for Android
+          </Link>
         </div>
 
         <div className="mt-8 text-center text-sm">

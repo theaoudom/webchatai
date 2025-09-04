@@ -8,15 +8,18 @@ import {
   FiMessageSquare,
   FiChevronDown,
   FiCheck,
+  FiMenu,
 } from 'react-icons/fi';
 
 const HistorySidebar = ({
   isOpen,
+  isMobile,
   history,
   onLoadChat,
   onNewChat,
   activeChatId,
   onDeleteChat,
+  onToggle,
 }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [isHistoryVisible, setIsHistoryVisible] = useState(true);
@@ -37,25 +40,42 @@ const HistorySidebar = ({
     }
   };
 
-  const sidebarVariants = {
+  const desktopVariants = {
     open: { width: 320 },
     closed: { width: 80 },
   };
 
+  const mobileVariants = {
+    open: { x: 0 },
+    closed: { x: '-100%' },
+  };
+
+  const baseClasses = "flex flex-col p-2";
+
+  const sidebarProps = {
+    className: `${baseClasses} ${
+      isMobile 
+        ? 'fixed h-full z-40 w-[320px] bg-[var(--background)] shadow-2xl' 
+        : 'flex-shrink-0 bg-[color:rgba(var(--background-end-rgb),0.2)] border-r border-[color:rgba(var(--foreground-rgb),0.1)]'
+    }`,
+    variants: isMobile ? mobileVariants : desktopVariants,
+    initial: "closed",
+    animate: isOpen ? 'open' : 'closed',
+    transition: { type: 'spring', stiffness: 400, damping: 40 },
+  };
+
   return (
-    <motion.div
-      className="flex-shrink-0 bg-[color:rgba(var(--background-end-rgb),0.2)] flex flex-col p-2 border-r border-[color:rgba(var(--foreground-rgb),0.1)]"
-      variants={sidebarVariants}
-      initial={false}
-      animate={isOpen ? 'open' : 'closed'}
-      transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-    >
+    <motion.div {...sidebarProps}>
       <div className="flex flex-col items-center w-full">
         {/* Logo */}
         <div className="p-2 mb-2 w-full">
-            <div className="flex items-center justify-center h-10 w-full rounded-full bg-[color:rgba(var(--foreground-rgb),0.05)]">
-                <FiMessageSquare className="h-6 w-6" />
-            </div>
+            <button
+              onClick={onToggle}
+              className="flex items-center justify-center h-10 w-full rounded-full bg-[color:rgba(var(--foreground-rgb),0.05)] hover:bg-[color:rgba(var(--foreground-rgb),0.1)] transition-colors"
+              aria-label="Toggle Sidebar"
+            >
+              <FiMessageSquare className="h-6 w-6" />
+            </button>
         </div>
         {/* New Chat Button */}
         <div className="p-2 w-full">
