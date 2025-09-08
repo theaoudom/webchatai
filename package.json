@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "generate-audio": "node generateAudio.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "app-info-parser": "^1.1.6",
     "framer-motion": "^12.23.12",
     "franc": "^6.2.0",
@@ -22,13 +24,14 @@
     "regenerator-runtime": "^0.14.1",
     "remark-gfm": "^4.0.1",
     "semver": "^7.7.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "gtts": "^0.2.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.2",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.4",
     "tailwindcss": "^4"
   }
 }

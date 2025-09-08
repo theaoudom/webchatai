@@ -119,14 +119,23 @@ const Home = () => {
                 <p className="mt-4 text-lg text-gray-300 max-w-lg">
                   {homeData.heroParagraph}
                 </p>
-                <a
-                  href="/chat"
-                  className="mt-8 inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-purple-600 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75 transition-transform transform hover:scale-105"
-                >
-                  {homeData.callToAction}
-                  <FiChevronRight className="ml-2" />
-          </a>
-        </div>
+                <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
+                  <a
+                    href="/chat"
+                    className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-purple-600 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75 transition-transform transform hover:scale-105 w-full sm:w-auto"
+                  >
+                    {homeData.callToAction}
+                    <FiChevronRight className="ml-2" />
+                  </a>
+                  <a
+                    href="/learnWithMe"
+                    className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-transparent border-2 border-white/50 rounded-full shadow-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-opacity-75 transition-transform transform hover:scale-105 w-full sm:w-auto"
+                  >
+                    Learn with Me
+                    <FiChevronRight className="ml-2" />
+                  </a>
+                </div>
+              </div>
               <div className="md:w-1/2 flex justify-center mt-12 md:mt-0">
                 <AnimatedIcon />
               </div>

@@ -1,0 +1,81 @@
+{
+    "beginner": [
+      {
+        "id": "en-beginner-1",
+        "type": "vocabulary",
+        "title": "Common Animals",
+        "content": [
+          { "word": "Dog", "meaning": "A common pet." },
+          { "word": "Cat", "meaning": "Another common pet." },
+          { "word": "Fish", "meaning": "An animal that swims." },
+          { "word": "Bird", "meaning": "An animal that flies." }
+        ]
+      },
+      {
+        "id": "en-beginner-2",
+        "type": "grammar",
+        "title": "Articles: A, An, The",
+        "explanation": "'A' and 'an' are used for general, non-specific nouns. Use 'a' before a consonant sound and 'an' before a vowel sound. 'The' is used for specific nouns that both the speaker and listener know.",
+        "examples": [
+          { "english": "I see a dog." },
+          { "english": "I have an apple." },
+          { "english": "The dog is big." }
+        ]
+      },
+      {
+        "id": "en-beginner-3",
+        "type": "quiz",
+        "title": "Articles Quiz",
+        "questions": [
+          { "question": "I want to eat ___ orange.", "options": ["a", "an", "the"], "answer": "an" },
+          { "question": "___ sun is very bright today.", "options": ["A", "An", "The"], "answer": "The" }
+        ]
+      }
+    ],
+    "intermediate": [
+      {
+        "id": "en-intermediate-1",
+        "type": "quiz",
+        "title": "Prepositions Quiz",
+        "questions": [
+          { "question": "The keys are ___ the table.", "options": ["on", "at", "in"], "answer": "on" },
+          { "question": "I will see you ___ Monday.", "options": ["in", "on", "at"], "answer": "on" },
+          { "question": "He lives ___ London.", "options": ["at", "on", "in"], "answer": "in" }
+        ]
+      },
+      {
+        "id": "en-intermediate-2",
+        "type": "grammar",
+        "title": "Present Continuous Tense",
+        "explanation": "Use the Present Continuous (am/is/are + verb-ing) to talk about actions happening right now, at this moment.",
+        "examples": [
+          { "english": "I am reading a book." },
+          { "english": "She is listening to music." },
+          { "english": "They are playing soccer." }
+        ]
+      },
+      {
+        "id": "en-intermediate-3",
+        "type": "listening",
+        "title": "Ordering at a Restaurant",
+        "audioFile": "/audio/en-restaurant-order.mp3",
+        "transcript": "Server: Hello, are you ready to order? \nCustomer: Yes, I'll have the chicken salad, please. \nServer: Anything to drink? \nCustomer: Just a water for me.",
+        "questions": [
+          { "question": "What did the customer order to eat?", "options": ["A burger", "Chicken salad", "A steak"], "answer": "Chicken salad" },
+          { "question": "What did the customer order to drink?", "options": ["Soda", "Coffee", "Water"], "answer": "Water" }
+        ]
+      }
+    ],
+    "advanced": [
+        {
+            "id": "en-advanced-1",
+            "type": "vocabulary",
+            "title": "Idiomatic Expressions",
+            "content": [
+              { "word": "Bite the bullet", "meaning": "To endure a difficult situation with courage." },
+              { "word": "Break the ice", "meaning": "To initiate a conversation in a social setting." },
+              { "word": "Cost an arm and a leg", "meaning": "To be very expensive." }
+            ]
+        }
+    ]
+}
