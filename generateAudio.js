@@ -20,6 +20,7 @@ if (!fs.existsSync(vocabOutputDir)) {
     fs.mkdirSync(vocabOutputDir, { recursive: true });
 }
 
+
 const generateAudio = async () => {
   console.log('Starting audio generation...');
   const languages = {
