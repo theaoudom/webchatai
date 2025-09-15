@@ -10,6 +10,7 @@ import {
   FiPlayCircle,
   FiMessageSquare,
   FiRepeat,
+  FiGrid,
 } from 'react-icons/fi';
 import { FaQuoteLeft } from 'react-icons/fa';
 import { homeData } from '../data/home';
@@ -24,6 +25,7 @@ const icons = {
   FiPlayCircle,
   FiMessageSquare,
   FiRepeat,
+  FiGrid,
 };
 
 const Home = () => {
@@ -317,6 +319,29 @@ const Home = () => {
                 aria-label={`Go to testimonial ${index + 1}`}
               />
             ))}
+          </div>
+        </motion.section>
+
+        <motion.section
+          className="w-full max-w-4xl mx-auto mt-24"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
+          <div className="text-center p-8 bg-gray-800/50 rounded-2xl border border-white/10">
+            <div className="flex justify-center mb-4">
+              <FiGrid className="h-12 w-12 text-purple-400" />
+            </div>
+            <h3 className="text-3xl font-bold mb-4">{homeData.gameCenter.heading}</h3>
+            <p className="text-gray-400 max-w-2xl mx-auto mb-6">{homeData.gameCenter.description}</p>
+            <a
+              href="/games"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-purple-600 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75 transition-transform transform hover:scale-105"
+            >
+              {homeData.gameCenter.buttonText}
+              <FiChevronRight className="ml-2" />
+            </a>
           </div>
         </motion.section>
 

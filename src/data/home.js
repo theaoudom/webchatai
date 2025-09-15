@@ -53,6 +53,12 @@ export const homeData = {
       },
     ],
   },
+  gameCenter: {
+    heading: "Enter the Game Center",
+    description: "Challenge your mind and have fun with our collection of interactive games designed to improve your skills.",
+    buttonText: "Play Now",
+    icon: "FiGrid",
+  },
   testimonials: {
     heading: 'What Our Users Say',
     items: [
