@@ -18,6 +18,9 @@ export const metadata = {
   icons: {
     icon: '/image/logo/Icon_chat.svg',
   },
+  other: {
+    "google-adsense-account": "ca-pub-5602570319866246",
+  }
 };
 
 export default function RootLayout({ children }) {
