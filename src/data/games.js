@@ -17,4 +17,10 @@ export const games = [
         description: 'Type the falling words before they hit the bottom!',
         imageUrl: '/image/games/typing-rush.svg',
     },
+    {
+        id: 'connect-four',
+        title: 'Connect Four vs AI',
+        description: 'Drop your discs and outsmart the AI. First to connect 4 in a row wins!',
+        imageUrl: '/image/games/connect-four.svg',
+    },
 ];

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="board" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow-red">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-yellow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="200" fill="url(#bg)" rx="12"/>
+
+  <!-- Stars / dots background -->
+  <circle cx="20" cy="15" r="1.5" fill="white" opacity="0.3"/>
+  <circle cx="60" cy="30" r="1" fill="white" opacity="0.2"/>
+  <circle cx="350" cy="20" r="1.5" fill="white" opacity="0.3"/>
+  <circle cx="380" cy="50" r="1" fill="white" opacity="0.2"/>
+  <circle cx="10" cy="160" r="1" fill="white" opacity="0.2"/>
+  <circle cx="390" cy="140" r="1.5" fill="white" opacity="0.3"/>
+
+  <!-- Title -->
+  <text x="200" y="30" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="white" opacity="0.95">Connect Four vs AI</text>
+
+  <!-- Board frame -->
+  <rect x="70" y="45" width="260" height="135" rx="10" fill="url(#board)" stroke="#3b82f6" stroke-width="2" opacity="0.9"/>
+
+  <!-- Grid holes (7 cols x 6 rows, smaller) -->
+  <!-- Row 1 -->
+  <circle cx="100" cy="65" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="137" cy="65" r="13" fill="#0f172a" opacity="0.7"/>
+  <!-- Red disc winning sequence -->
+  <circle cx="174" cy="65" r="13" fill="#ef4444" filter="url(#glow-red)" opacity="0.95"/>
+  <circle cx="211" cy="65" r="13" fill="#ef4444" filter="url(#glow-red)" opacity="0.95"/>
+  <circle cx="248" cy="65" r="13" fill="#ef4444" filter="url(#glow-red)" opacity="0.95"/>
+  <circle cx="285" cy="65" r="13" fill="#ef4444" filter="url(#glow-red)" opacity="0.95"/>
+  <circle cx="322" cy="65" r="13" fill="#0f172a" opacity="0.7"/>
+  <!-- Row 2 -->
+  <circle cx="100" cy="97" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="137" cy="97" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="174" cy="97" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="211" cy="97" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="248" cy="97" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="285" cy="97" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="322" cy="97" r="13" fill="#0f172a" opacity="0.7"/>
+  <!-- Row 3 -->
+  <circle cx="100" cy="129" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="137" cy="129" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="174" cy="129" r="13" fill="#ef4444" opacity="0.85"/>
+  <circle cx="211" cy="129" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="248" cy="129" r="13" fill="#ef4444" opacity="0.85"/>
+  <circle cx="285" cy="129" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="322" cy="129" r="13" fill="#facc15" opacity="0.9"/>
+  <!-- Row 4 -->
+  <circle cx="100" cy="161" r="13" fill="#ef4444" opacity="0.85"/>
+  <circle cx="137" cy="161" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="174" cy="161" r="13" fill="#0f172a" opacity="0.7"/>
+  <circle cx="211" cy="161" r="13" fill="#ef4444" opacity="0.85"/>
+  <circle cx="248" cy="161" r="13" fill="#facc15" opacity="0.9"/>
+  <circle cx="285" cy="161" r="13" fill="#ef4444" opacity="0.85"/>
+  <circle cx="322" cy="161" r="13" fill="#0f172a" opacity="0.7"/>
+
+  <!-- Winning line indicator -->
+  <line x1="174" y1="65" x2="285" y2="65" stroke="white" stroke-width="2.5" opacity="0.6" stroke-dasharray="4,2"/>
+
+  <!-- Legend badges -->
+  <rect x="105" y="183" width="80" height="14" rx="7" fill="#ef4444" opacity="0.2"/>
+  <circle cx="118" cy="190" r="5" fill="#ef4444"/>
+  <text x="127" y="194" font-family="Arial,sans-serif" font-size="9" fill="white" opacity="0.8">You</text>
+  <rect x="215" y="183" width="80" height="14" rx="7" fill="#facc15" opacity="0.2"/>
+  <circle cx="228" cy="190" r="5" fill="#facc15"/>
+  <text x="237" y="194" font-family="Arial,sans-serif" font-size="9" fill="white" opacity="0.8">AI</text>
+</svg>
