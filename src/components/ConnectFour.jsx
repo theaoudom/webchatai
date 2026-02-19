@@ -167,6 +167,7 @@ export default function ConnectFour() {
     const [isDraw, setIsDraw] = useState(false);
     const [hoveredCol, setHoveredCol] = useState(null);
     const [gameOver, setGameOver] = useState(false);
+    const [showOverlay, setShowOverlay] = useState(false); // delayed popup
     const [showConfetti, setShowConfetti] = useState(false);
     const [aiThinking, setAiThinking] = useState(false);
 
@@ -183,13 +184,18 @@ export default function ConnectFour() {
         if (result) {
             setWinResult(result);
             setGameOver(true);
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 6000);
+            // Delay the overlay so players can see the highlighted winning cells first
+            setTimeout(() => {
+                setShowOverlay(true);
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 6000);
+            }, 1500);
             return true;
         }
         if (isBoardFull(newBoard)) {
             setIsDraw(true);
             setGameOver(true);
+            setTimeout(() => setShowOverlay(true), 1500);
             return true;
         }
         return false;
@@ -232,6 +238,7 @@ export default function ConnectFour() {
         setWinResult(null);
         setIsDraw(false);
         setGameOver(false);
+        setShowOverlay(false);
         setShowConfetti(false);
         setAiThinking(false);
         setScreen('game');
@@ -243,6 +250,7 @@ export default function ConnectFour() {
         setWinResult(null);
         setIsDraw(false);
         setGameOver(false);
+        setShowOverlay(false);
         setShowConfetti(false);
         setAiThinking(false);
     };
@@ -415,8 +423,8 @@ export default function ConnectFour() {
                 </span>
             </div>
 
-            {/* Game Over Overlay */}
-            {gameOver && (
+            {/* Game Over Overlay — shown after 1.5s delay so the winning cells are visible first */}
+            {showOverlay && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-black/70 backdrop-blur-sm gap-5">
                     <div className="text-center">
                         <p className="text-5xl mb-2">
