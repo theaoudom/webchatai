@@ -23,4 +23,10 @@ export const games = [
         description: 'Drop your discs and outsmart the AI. First to connect 4 in a row wins!',
         imageUrl: '/image/games/connect-four.svg',
     },
+    {
+        id: 'battleship',
+        title: 'Battleship Command',
+        description: 'Command your fleet and destroy the enemy ships before they sink yours.',
+        imageUrl: '/image/games/battleship.svg',
+    },
 ];
