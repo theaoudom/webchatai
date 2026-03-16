@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /chat
+Disallow: /games
+
+Sitemap: https://dom-ai.vercel.app/sitemap.xml

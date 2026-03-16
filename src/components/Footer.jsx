@@ -26,6 +26,17 @@ const Footer = () => {
           );
         })}
       </div>
+      <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-4 text-sm">
+        {footerData.links?.map((link) => (
+          <a
+            key={link.name}
+            href={link.href}
+            className="hover:text-white transition-colors"
+          >
+            {link.name}
+          </a>
+        ))}
+      </div>
       <p>{footerData.copyright}</p>
     </footer>
   );

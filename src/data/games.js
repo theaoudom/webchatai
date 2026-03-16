@@ -29,4 +29,10 @@ export const games = [
         description: 'Command your fleet and destroy the enemy ships before they sink yours.',
         imageUrl: '/image/games/battleship.svg',
     },
+    {
+        id: '2048-race',
+        title: '2048 Race',
+        description: 'Race against an AI to reach the 2048 tile first!',
+        imageUrl: '/image/games/2048-race.svg', // Assuming a placeholder or using generic for now
+    },
 ];

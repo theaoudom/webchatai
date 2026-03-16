@@ -5,4 +5,9 @@ export const footerData = {
     { name: "GitHub", href: "#", icon: "FiGithub" },
     { name: "LinkedIn", href: "#", icon: "FiLinkedin" },
   ],
+  links: [
+    { name: "About Us", href: "/about" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+  ]
 };
