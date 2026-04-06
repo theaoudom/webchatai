@@ -18,6 +18,9 @@ export const metadata = {
   icons: {
     icon: '/image/logo/Icon_chat.svg',
   },
+  verification: {
+    google: '3U5spYtXAu0uOIhUX8xWToGizggVXFaImdwVFnV_7Jw',
+  },
   other: {
     "google-adsense-account": "ca-pub-5602570319866246",
   }
