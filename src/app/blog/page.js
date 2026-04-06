@@ -17,16 +17,22 @@ export default function BlogIndex() {
       slug: "the-future-of-ai-chat"
     },
     {
-      title: "How Gamification Enhances Learning",
-      excerpt: "Discover the science behind our educational games and how interactive elements boost memory retention.",
+      title: "How Gamification Enhances Memory Retention",
+      excerpt: "Explore the science behind turning education into games and how it improves long-term memory retention.",
       date: "March 10, 2026",
-      slug: "#"
+      slug: "gamification-learning"
     },
     {
-      title: "Understanding Prompting for Better Results",
-      excerpt: "A beginner's guide on how to talk to conversational AI agents to get the exact output you need.",
+      title: "Understanding AI Prompts for Beginners",
+      excerpt: "A comprehensive beginner guide on how to talk to conversational AI agents to get the exact output you need.",
       date: "February 28, 2026",
-      slug: "#"
+      slug: "understanding-ai-prompts"
+    },
+    {
+      title: "Top 5 Ways Artificial Intelligence is Changing Education",
+      excerpt: "An article discussing the top 5 ways AI is disrupting and improving traditional educational paradigms.",
+      date: "January 15, 2026",
+      slug: "ai-in-education"
     }
   ];
 

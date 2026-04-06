@@ -7,6 +7,7 @@ export const footerData = {
   ],
   links: [
     { name: "About Us", href: "/about" },
+    { name: "Contact Us", href: "/contact" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms of Service", href: "/terms" },
   ]
