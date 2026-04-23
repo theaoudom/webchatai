@@ -3,4 +3,4 @@ Allow: /
 Disallow: /chat
 Disallow: /games
 
-Sitemap: https://get-domai.xyz/sitemap.xml
+Sitemap: https://www.get-domai.xyz/sitemap.xml
