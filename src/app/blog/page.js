@@ -11,6 +11,18 @@ export const metadata = {
 export default function BlogIndex() {
   const articles = [
     {
+      title: "The Ultimate Guide to Prompt Engineering in 2026",
+      excerpt: "Learn the essential techniques to write better prompts and get exactly what you want from AI language models.",
+      date: "May 12, 2026",
+      slug: "prompt-engineering-guide"
+    },
+    {
+      title: "AI, Data Privacy, and Security in 2026 - DomAI",
+      excerpt: "An in-depth look at how conversational AI platforms protect your data and the steps you can take to stay secure.",
+      date: "May 10, 2026",
+      slug: "ai-privacy-security"
+    },
+    {
       title: "The Future of AI Chatbots in 2026",
       excerpt: "Explore how large language models are transforming digital communication, from customer service to personal AI assistants.",
       date: "March 16, 2026",

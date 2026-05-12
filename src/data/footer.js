@@ -6,6 +6,9 @@ export const footerData = {
     { name: "LinkedIn", href: "#", icon: "FiLinkedin" },
   ],
   links: [
+    { name: "Features", href: "/features" },
+    { name: "Use Cases", href: "/use-cases" },
+    { name: "FAQ", href: "/faq" },
     { name: "About Us", href: "/about" },
     { name: "Contact Us", href: "/contact" },
     { name: "Privacy Policy", href: "/privacy" },

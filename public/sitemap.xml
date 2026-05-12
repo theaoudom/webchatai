@@ -50,4 +50,29 @@
     <lastmod>2026-03-16</lastmod>
     <priority>0.5</priority>
   </url>
+  <url>
+    <loc>https://www.get-domai.xyz/faq</loc>
+    <lastmod>2026-05-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.get-domai.xyz/use-cases</loc>
+    <lastmod>2026-05-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.get-domai.xyz/features</loc>
+    <lastmod>2026-05-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.get-domai.xyz/blog/prompt-engineering-guide</loc>
+    <lastmod>2026-05-12</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.get-domai.xyz/blog/ai-privacy-security</loc>
+    <lastmod>2026-05-12</lastmod>
+    <priority>0.7</priority>
+  </url>
 </urlset>
