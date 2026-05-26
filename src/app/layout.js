@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from '../context/ThemeContext';
 import "./globals.css";
+import Head from 'next/head';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,24 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <Head>
+        <title>{metadata.title}</title>
+        <meta name="description" content={metadata.description} />
+        <link rel="icon" href={metadata.icons.icon} />
+        <meta name="google-site-verification" content={metadata.verification.google} />
+        <meta name="google-adsense-account" content={metadata.other["google-adsense-account"]} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "DomAI",
+          "url": "https://www.get-domai.xyz/",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.get-domai.xyz/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        })}} />
+      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

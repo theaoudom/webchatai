@@ -232,6 +232,32 @@ const Home = () => {
         </motion.section>
 
         <motion.section
+          className="w-full max-w-4xl mx-auto mt-24 p-8 bg-gray-800/30 rounded-3xl border border-white/5 backdrop-blur-sm"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
+          <div className="flex justify-center mb-6">
+            <FiZap className="h-10 w-10 text-pink-400" />
+          </div>
+          <h3 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+            Why DomAI Stands Out
+          </h3>
+          <div className="space-y-6 text-gray-300 leading-relaxed text-lg">
+            <p>
+              DomAI combines state‑of‑the‑art large language models with a meticulously crafted prompt‑engineering pipeline, enabling it to produce responses that are not only contextually accurate but also stylistically consistent. Our proprietary architecture allows the system to fetch real‑time data and synthesize complex topics, ensuring up‑to‑date information for every query.
+            </p>
+            <p>
+              Whether you are a developer looking for real-time code generation, a student exploring new educational concepts, or a creator brainstorming your next big idea, DomAI adapts to your workflow. We've prioritized a deeply integrated, conversational experience that feels less like using a search engine and more like collaborating with an expert peer.
+            </p>
+            <p>
+              Moreover, the platform respects user privacy by processing interactions securely, never storing personal data without explicit consent. This delivers a seamless, high‑performance experience across devices while maintaining the highest standards of security and compliance. Each tool is built with a consistent design language, leveraging glassmorphism backgrounds, subtle micro‑animations, and a dark‑mode‑first palette that delights users and reinforces a premium, modern aesthetic.
+            </p>
+          </div>
+        </motion.section>
+
+        <motion.section
           className="w-full max-w-4xl mx-auto mt-24"
           initial="hidden"
           whileInView="visible"
