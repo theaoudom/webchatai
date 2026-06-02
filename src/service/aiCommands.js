@@ -3,8 +3,13 @@
 // module-level conversation history), this is intentionally stateless so it is
 // safe to run per-request in a serverless environment with many users.
 
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const API_URL = process.env.NEXT_PUBLIC_GEMINI_API_URL;
+// The server-side path (Telegram bot + /api/ai/chat) uses its OWN model,
+// independent of the web chat (which reads NEXT_PUBLIC_GEMINI_API_URL and will
+// have a user-facing model selector). Telegram answers are short, so we default
+// to the lighter, higher-quota flash-lite model. Override with GEMINI_BOT_MODEL.
+const API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const BOT_MODEL = process.env.GEMINI_BOT_MODEL || "gemini-2.5-flash-lite";
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${BOT_MODEL}:generateContent`;
 
 // The base persona shared by every command.
 const BASE_PERSONA =
