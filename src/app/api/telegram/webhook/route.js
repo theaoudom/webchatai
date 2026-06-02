@@ -80,9 +80,21 @@ async function handleMessage(message) {
     return;
   }
 
-  // Prefer the replied-to message; fall back to inline text after the command.
-  const repliedText = message.reply_to_message?.text || message.reply_to_message?.caption;
-  const input = (repliedText || inlineText || "").trim();
+  // Use the replied-to message as the content. If the user ALSO typed text
+  // after the command, treat that as a specific request about the replied
+  // message (e.g. reply to a code block + "/ask why does this crash?").
+  const repliedText = (
+    message.reply_to_message?.text ||
+    message.reply_to_message?.caption ||
+    ""
+  ).trim();
+
+  let input;
+  if (repliedText && inlineText) {
+    input = `${inlineText}\n\nReferenced message:\n"""${repliedText}"""`;
+  } else {
+    input = repliedText || inlineText;
+  }
 
   if (!input) {
     await sendMessage(chatId, NO_REPLY_MSG, { replyTo: message.message_id });
@@ -102,7 +114,7 @@ async function handleMessage(message) {
 
   let response;
   try {
-    response = await generateAIResponse(command, input);
+    response = await generateAIResponse(command, input, { concise: true });
   } catch (err) {
     console.error(`generateAIResponse(${command}) failed:`, err.message);
     await sendMessage(chatId, AI_DOWN_MSG, { replyTo: message.message_id });

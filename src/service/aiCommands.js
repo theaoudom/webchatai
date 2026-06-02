@@ -54,15 +54,26 @@ export const COMMANDS = {
 export const isValidCommand = (type) =>
   typeof type === "string" && Object.prototype.hasOwnProperty.call(COMMANDS, type);
 
+// Extra instruction for chat surfaces (Telegram) where long answers are hard to
+// read. Keeps responses short and scannable on a phone.
+const CONCISE_INSTRUCTION =
+  "Keep your answer concise and easy to read on a small mobile chat screen. " +
+  "Get straight to the point, use short sentences and tight bullet lists, and " +
+  "skip long preambles or repetitive summaries. Aim for under ~120 words unless " +
+  "the user explicitly asks for more detail.";
+
 /**
  * Run a single command-driven Gemini request.
  * @param {string} type - one of the keys in COMMANDS (ask/fix/explain/translate/summarize)
  * @param {string} message - the text to act on (e.g. the replied-to Telegram message)
- * @param {AbortSignal} [signal] - optional fetch abort signal
+ * @param {object} [options]
+ * @param {AbortSignal} [options.signal] - optional fetch abort signal
+ * @param {boolean} [options.concise] - request a short, chat-friendly answer
  * @returns {Promise<string>} the model's text response
  * @throws {Error} when the type is invalid, the message is empty, or the API fails
  */
-export const generateAIResponse = async (type, message, signal) => {
+export const generateAIResponse = async (type, message, options = {}) => {
+  const { signal, concise = false } = options;
   if (!isValidCommand(type)) {
     throw new Error(`Unknown command type: "${type}"`);
   }
@@ -78,8 +89,12 @@ export const generateAIResponse = async (type, message, signal) => {
 
   const command = COMMANDS[type];
 
+  const systemText = concise
+    ? `${BASE_PERSONA}\n\n${command.system}\n\n${CONCISE_INSTRUCTION}`
+    : `${BASE_PERSONA}\n\n${command.system}`;
+
   const systemInstruction = {
-    parts: [{ text: `${BASE_PERSONA}\n\n${command.system}` }],
+    parts: [{ text: systemText }],
   };
 
   const response = await fetch(API_URL, {
