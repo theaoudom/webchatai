@@ -116,8 +116,12 @@ async function handleMessage(message) {
   try {
     response = await generateAIResponse(command, input, { concise: true });
   } catch (err) {
-    console.error(`generateAIResponse(${command}) failed:`, err.message);
-    await sendMessage(chatId, AI_DOWN_MSG, { replyTo: message.message_id });
+    console.error(`generateAIResponse(${command}) failed:`, err.status || "", err.message);
+    const msg =
+      err.status === 429
+        ? "I'm getting a lot of requests right now. Please try again in a few seconds."
+        : AI_DOWN_MSG;
+    await sendMessage(chatId, msg, { replyTo: message.message_id });
     return;
   }
 

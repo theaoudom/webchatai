@@ -97,29 +97,48 @@ export const generateAIResponse = async (type, message, options = {}) => {
     parts: [{ text: systemText }],
   };
 
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-goog-api-key": API_KEY,
-    },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text }] }],
-      systemInstruction,
-    }),
-    signal,
+  const body = JSON.stringify({
+    contents: [{ role: "user", parts: [{ text }] }],
+    systemInstruction,
   });
 
-  if (!response.ok) {
-    throw new Error(`Gemini HTTP error: ${response.status}`);
+  // Gemini's free tier rate-limits aggressively (429) and occasionally reports
+  // the model as overloaded (503). Both are transient, so retry a couple of
+  // times with a short backoff before giving up.
+  const RETRYABLE = new Set([429, 500, 503]);
+  const MAX_RETRIES = 2;
+
+  let lastStatus;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": API_KEY,
+      },
+      body,
+      signal,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const modelResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!modelResponse) {
+        throw new Error("Gemini returned an empty response");
+      }
+      return modelResponse;
+    }
+
+    lastStatus = response.status;
+    if (RETRYABLE.has(response.status) && attempt < MAX_RETRIES) {
+      // 600ms, then 1200ms — usually enough to clear a per-minute burst limit.
+      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      continue;
+    }
+    break;
   }
 
-  const data = await response.json();
-  const modelResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!modelResponse) {
-    throw new Error("Gemini returned an empty response");
-  }
-
-  return modelResponse;
+  const err = new Error(`Gemini HTTP error: ${lastStatus}`);
+  err.status = lastStatus;
+  throw err;
 };

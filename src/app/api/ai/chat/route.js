@@ -26,7 +26,13 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, response });
   } catch (error) {
-    console.error("Error in /api/ai/chat:", error);
+    console.error("Error in /api/ai/chat:", error.status || "", error.message);
+    if (error.status === 429) {
+      return NextResponse.json(
+        { success: false, error: "Rate limited. Please try again shortly." },
+        { status: 429 }
+      );
+    }
     return NextResponse.json(
       { success: false, error: "AI is temporarily unavailable." },
       { status: 502 }
