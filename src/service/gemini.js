@@ -9,12 +9,18 @@ export const startNewChat = () => {
   conversationHistory = [];
 };
 
-export const sendMessage = async (newMessage, signal) => {
+export const sendMessage = async (newMessage, signal, model) => {
   try {
     conversationHistory.push({
       role: 'user',
       parts: [{ text: newMessage }],
     });
+
+    // When a model is chosen in the UI, build the endpoint for that model;
+    // otherwise fall back to the configured default URL.
+    const endpoint = model
+      ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
+      : API_URL;
 
     const systemInstruction = {
       parts: [
@@ -24,7 +30,7 @@ export const sendMessage = async (newMessage, signal) => {
       ],
     };
 
-    const response = await fetch(`${API_URL}`, {
+    const response = await fetch(`${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

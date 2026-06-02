@@ -11,6 +11,7 @@ import HistorySidebar from '../../components/HistorySidebar';
 import { useTheme } from '../../context/ThemeContext';
 import { saveOrUpdateChat, getHistory, deleteChat } from '../../service/chatHistory';
 import DownloadBanner from '../../components/DownloadBanner';
+import { DEFAULT_MODEL_ID, MODEL_STORAGE_KEY } from '../../data/models';
 
 const ChatPage = () => {
   const [messages, setMessages] = useState([]);
@@ -21,9 +22,21 @@ const ChatPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeChatId, setActiveChatId] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL_ID);
   const { theme } = useTheme();
   const abortControllerRef = useRef(null);
   const lastSavedMessages = useRef(null);
+
+  // Load the saved model choice on mount.
+  useEffect(() => {
+    const saved = localStorage.getItem(MODEL_STORAGE_KEY);
+    if (saved) setSelectedModel(saved);
+  }, []);
+
+  const handleModelChange = (modelId) => {
+    setSelectedModel(modelId);
+    localStorage.setItem(MODEL_STORAGE_KEY, modelId);
+  };
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -103,7 +116,7 @@ const ChatPage = () => {
     setInput('');
 
     try {
-      const modelResponse = await sendMessage(userInput, abortControllerRef.current.signal);
+      const modelResponse = await sendMessage(userInput, abortControllerRef.current.signal, selectedModel);
       abortControllerRef.current = null;
 
       if (modelResponse === null) {
@@ -187,6 +200,8 @@ const ChatPage = () => {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           isSidebarOpen={isSidebarOpen}
           isMobile={isMobile}
+          selectedModel={selectedModel}
+          onModelChange={handleModelChange}
         />
         <SettingsDialog
           isOpen={isSettingsOpen}

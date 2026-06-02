@@ -1,8 +1,16 @@
 import Link from 'next/link';
 import { FiSettings, FiMenu } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
+import ModelSelector from './ModelSelector';
 
-const ChatHeader = ({ onSettingsClick, onToggleSidebar, isSidebarOpen, isMobile }) => {
+const ChatHeader = ({
+  onSettingsClick,
+  onToggleSidebar,
+  isSidebarOpen,
+  isMobile,
+  selectedModel,
+  onModelChange,
+}) => {
   return (
     <header
       className="backdrop-blur-sm border-b sticky top-0 z-20"
@@ -32,7 +40,13 @@ const ChatHeader = ({ onSettingsClick, onToggleSidebar, isSidebarOpen, isMobile 
                 DomAI
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {onModelChange && (
+              <ModelSelector
+                selectedModel={selectedModel}
+                onSelect={onModelChange}
+              />
+            )}
             <button
               onClick={onSettingsClick}
               className="p-2 rounded-full hover:bg-[rgba(var(--foreground-rgb),0.1)] transition-colors"
