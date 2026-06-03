@@ -4,7 +4,7 @@ const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const API_BASE = TOKEN ? `https://api.telegram.org/bot${TOKEN}` : null;
 
 // Telegram messages cap at 4096 chars. Leave a little headroom.
-const MAX_MESSAGE_LENGTH = 4000;
+export const MAX_MESSAGE_LENGTH = 4000;
 
 async function callTelegram(method, payload) {
   if (!API_BASE) {
@@ -41,15 +41,16 @@ export async function sendChatAction(chatId, action = "typing") {
  * the most forgiving option for that, but malformed markup makes the API reject
  * the whole message — so if a parsed send fails we retry once as plain text.
  */
-export async function sendMessage(chatId, text, { replyTo, parseMode = "Markdown" } = {}) {
+export async function sendMessage(chatId, text, { replyTo, parseMode = "Markdown", replyMarkup } = {}) {
   const chunks = splitMessage(text);
 
   for (let i = 0; i < chunks.length; i++) {
     const payload = {
       chat_id: chatId,
       text: chunks[i],
-      // Only the first chunk replies to the original message.
+      // Only the first chunk replies to the original message / gets the keyboard.
       ...(i === 0 && replyTo ? { reply_to_message_id: replyTo } : {}),
+      ...(i === 0 && replyMarkup ? { reply_markup: replyMarkup } : {}),
       ...(parseMode ? { parse_mode: parseMode } : {}),
       // Don't fail the whole send if the replied-to message was deleted.
       allow_sending_without_reply: true,
@@ -64,6 +65,44 @@ export async function sendMessage(chatId, text, { replyTo, parseMode = "Markdown
       delete payload.parse_mode;
       await callTelegram("sendMessage", payload);
     }
+  }
+}
+
+/**
+ * Acknowledge an inline-keyboard button press (stops the loading spinner).
+ * Fire-and-forget; never throws.
+ */
+export async function answerCallbackQuery(callbackQueryId, text) {
+  try {
+    await callTelegram("answerCallbackQuery", {
+      callback_query_id: callbackQueryId,
+      ...(text ? { text } : {}),
+    });
+  } catch (err) {
+    console.error("answerCallbackQuery failed:", err.message);
+  }
+}
+
+/**
+ * Edit a previously sent bot message (used to replace the language-picker
+ * prompt with the translation). Falls back to plain text on markdown errors.
+ * Note: editMessageText does not support chunking — keep text under the cap.
+ */
+export async function editMessageText(chatId, messageId, text, { parseMode = "Markdown" } = {}) {
+  const payload = {
+    chat_id: chatId,
+    message_id: messageId,
+    text: String(text || "").trim() || "(empty response)",
+    ...(parseMode ? { parse_mode: parseMode } : {}),
+    disable_web_page_preview: true,
+  };
+
+  try {
+    await callTelegram("editMessageText", payload);
+  } catch (err) {
+    console.error("editMessageText (markdown) failed, retrying as plain:", err.message);
+    delete payload.parse_mode;
+    await callTelegram("editMessageText", payload);
   }
 }
 

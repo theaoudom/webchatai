@@ -79,9 +79,13 @@ TELEGRAM_MAX_PER_MINUTE=12
      -d '{
        "url": "https://YOUR_DOMAIN/api/telegram/webhook",
        "secret_token": "YOUR_TELEGRAM_WEBHOOK_SECRET",
-       "allowed_updates": ["message"]
+       "allowed_updates": ["message", "callback_query"]
      }'
    ```
+
+   > `callback_query` is required for the `/translate` language-picker buttons.
+   > If you registered the webhook before they existed, re-run this command —
+   > otherwise Telegram silently drops the button presses.
 
 4. **(Groups)** To let the bot read replied messages in groups, either disable
    privacy mode in BotFather (`/setprivacy` → Disable) or make the bot a group
@@ -97,7 +101,7 @@ TELEGRAM_MAX_PER_MINUTE=12
        {"command":"fix","description":"Fix grammar & improve writing"},
        {"command":"explain","description":"Explain code or text simply"},
        {"command":"summarize","description":"Summarize content"},
-       {"command":"translate","description":"Translate to English"}
+       {"command":"translate","description":"Translate (pick a language, or e.g. /translate khmer)"}
      ]}'
    ```
 

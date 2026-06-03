@@ -3,10 +3,11 @@ import { generateAIResponse, isValidCommand } from "../../../../service/aiComman
 
 // POST /api/ai/chat
 // Body:     { "type": "ask", "message": "How to fix Kotlin crash?" }
+//           translate also accepts an optional "targetLanguage" (default English)
 // Response: { "success": true, "response": "The crash happens because..." }
 export async function POST(req) {
   try {
-    const { type, message } = await req.json();
+    const { type, message, targetLanguage } = await req.json();
 
     if (!isValidCommand(type)) {
       return NextResponse.json(
@@ -22,7 +23,7 @@ export async function POST(req) {
       );
     }
 
-    const response = await generateAIResponse(type, message);
+    const response = await generateAIResponse(type, message, { targetLanguage });
 
     return NextResponse.json({ success: true, response });
   } catch (error) {

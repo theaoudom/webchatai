@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { COMMANDS, isValidCommand, generateAIResponse } from "../../../../service/aiCommands";
-import { sendMessage, sendChatAction } from "../../../../service/telegram";
+import {
+  sendMessage,
+  sendChatAction,
+  answerCallbackQuery,
+  editMessageText,
+  MAX_MESSAGE_LENGTH,
+} from "../../../../service/telegram";
 import { checkRateLimit } from "../../../../utils/rateLimiter";
 
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET;
@@ -12,8 +18,31 @@ const HELP_TEXT =
   "/fix — fix grammar & improve writing\n" +
   "/explain — explain code or text simply\n" +
   "/summarize — summarize the content\n" +
-  "/translate — translate to English\n\n" +
+  "/translate — translate (pick a language, or e.g. `/translate khmer`)\n\n" +
   "You can also type the text inline, e.g. `/ask How do I fix this Kotlin crash?`";
+
+// Languages offered by the /translate inline keyboard. `name` is the English
+// language name fed into the prompt; `label` is what the button shows.
+const LANGUAGES = [
+  { code: "en", label: "English", name: "English" },
+  { code: "km", label: "ខ្មែរ", name: "Khmer" },
+  { code: "fr", label: "Français", name: "French" },
+  { code: "zh", label: "中文", name: "Chinese" },
+  { code: "ja", label: "日本語", name: "Japanese" },
+  { code: "ko", label: "한국어", name: "Korean" },
+  { code: "th", label: "ไทย", name: "Thai" },
+  { code: "vi", label: "Tiếng Việt", name: "Vietnamese" },
+];
+
+// Two buttons per row.
+const LANGUAGE_KEYBOARD = {
+  inline_keyboard: LANGUAGES.reduce((rows, lang, i) => {
+    const button = { text: lang.label, callback_data: `tr:${lang.code}` };
+    if (i % 2 === 0) rows.push([button]);
+    else rows[rows.length - 1].push(button);
+    return rows;
+  }, []),
+};
 
 const NO_REPLY_MSG = "Please reply to a message first (or type your text after the command).";
 const AI_DOWN_MSG = "AI is temporarily unavailable.\nPlease try again later.";
@@ -37,7 +66,19 @@ export async function POST(req) {
     return NextResponse.json({ ok: true });
   }
 
-  // We only handle plain messages (ignore edited messages, callbacks, etc.).
+  // Inline-keyboard button presses (the /translate language picker).
+  const callback = update?.callback_query;
+  if (callback) {
+    try {
+      await handleCallback(callback);
+    } catch (err) {
+      console.error("Telegram callback handler error:", err);
+      await answerCallbackQuery(callback.id, "Something went wrong. Please try again.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // Otherwise we only handle plain messages (ignore edited messages, etc.).
   const message = update?.message;
   if (!message || !message.text) {
     return NextResponse.json({ ok: true });
@@ -90,7 +131,35 @@ async function handleMessage(message) {
   ).trim();
 
   let input;
-  if (repliedText && inlineText) {
+  let targetLanguage;
+
+  if (command === "translate") {
+    // /translate supports an optional inline language ("/translate khmer" or
+    // "/translate khmer <text>"). Without one, show the language picker. The
+    // picker replies to the message that CONTAINS the text (the replied-to
+    // message, or the "/translate <text>" command itself), so the callback
+    // handler can recover the text via reply_to_message later.
+    const { language, rest } = extractLanguage(inlineText);
+    input = repliedText || rest;
+
+    if (!input) {
+      await sendMessage(chatId, NO_REPLY_MSG, { replyTo: message.message_id });
+      return;
+    }
+
+    if (!language) {
+      const textMessageId = repliedText
+        ? message.reply_to_message.message_id
+        : message.message_id;
+      await sendMessage(chatId, "Translate to which language?", {
+        replyTo: textMessageId,
+        replyMarkup: LANGUAGE_KEYBOARD,
+      });
+      return;
+    }
+
+    targetLanguage = language; // fall through to the normal AI path
+  } else if (repliedText && inlineText) {
     input = `${inlineText}\n\nReferenced message:\n"""${repliedText}"""`;
   } else {
     input = repliedText || inlineText;
@@ -114,7 +183,7 @@ async function handleMessage(message) {
 
   let response;
   try {
-    response = await generateAIResponse(command, input, { concise: true });
+    response = await generateAIResponse(command, input, { concise: true, targetLanguage });
   } catch (err) {
     console.error(`generateAIResponse(${command}) failed:`, err.status || "", err.message);
     const msg =
@@ -126,6 +195,101 @@ async function handleMessage(message) {
   }
 
   await sendMessage(chatId, response, { replyTo: message.message_id });
+}
+
+/**
+ * Pull an optional leading language off /translate's inline text.
+ * Matches a code ("km"), English name ("khmer"), or native label ("ខ្មែរ")
+ * from LANGUAGES — case-insensitive. Anything unrecognized is treated as
+ * text to translate, so "/translate Hello world" still works.
+ * Returns { language: <English name>|null, rest: <remaining text> }.
+ */
+function extractLanguage(text) {
+  if (!text) return { language: null, rest: "" };
+
+  const spaceIdx = text.search(/\s/);
+  const first = (spaceIdx === -1 ? text : text.slice(0, spaceIdx)).toLowerCase();
+  const lang = LANGUAGES.find(
+    (l) => l.code === first || l.name.toLowerCase() === first || l.label.toLowerCase() === first
+  );
+
+  if (!lang) return { language: null, rest: text };
+  return {
+    language: lang.name,
+    rest: spaceIdx === -1 ? "" : text.slice(spaceIdx + 1).trim(),
+  };
+}
+
+/**
+ * Handle a language-picker button press (callback_data "tr:<code>").
+ * The picker message is a reply to the message containing the text to
+ * translate, so we recover the text from callback.message.reply_to_message.
+ */
+async function handleCallback(callback) {
+  const data = callback.data || "";
+  const pickerMessage = callback.message;
+
+  const match = /^tr:([a-z]{2})$/.exec(data);
+  const lang = match && LANGUAGES.find((l) => l.code === match[1]);
+  if (!lang || !pickerMessage) {
+    await answerCallbackQuery(callback.id);
+    return;
+  }
+
+  const chatId = pickerMessage.chat.id;
+  const userId = callback.from?.id ?? chatId;
+
+  // Anti-spam (button presses hit the AI just like commands do).
+  const limit = checkRateLimit(userId);
+  if (!limit.allowed) {
+    const wait = limit.retryAfter ? ` Try again in ${limit.retryAfter}s.` : "";
+    await answerCallbackQuery(callback.id, `You're going too fast.${wait}`);
+    return;
+  }
+
+  // Recover the text to translate from the message the picker replied to.
+  const source = pickerMessage.reply_to_message;
+  let text = (source?.text || source?.caption || "").trim();
+  // If it was an inline command ("/translate <text>"), strip the command part.
+  if (text.startsWith("/")) {
+    text = parseCommand(text)?.inlineText || "";
+  }
+
+  if (!text) {
+    await answerCallbackQuery(callback.id, "I can't find the original message anymore.");
+    await editMessageText(chatId, pickerMessage.message_id, NO_REPLY_MSG);
+    return;
+  }
+
+  // Acknowledge the tap right away, then show progress while Gemini runs.
+  await answerCallbackQuery(callback.id);
+  await editMessageText(chatId, pickerMessage.message_id, `Translating to ${lang.name}…`);
+  await sendChatAction(chatId, "typing");
+
+  let response;
+  try {
+    response = await generateAIResponse("translate", text, {
+      concise: true,
+      targetLanguage: lang.name,
+    });
+  } catch (err) {
+    console.error("generateAIResponse(translate) failed:", err.status || "", err.message);
+    const msg =
+      err.status === 429
+        ? "I'm getting a lot of requests right now. Please try again in a few seconds."
+        : AI_DOWN_MSG;
+    await editMessageText(chatId, pickerMessage.message_id, msg);
+    return;
+  }
+
+  // Replace the picker with the translation; very long results need the
+  // chunked send path instead (editMessageText cannot split messages).
+  if (response.length <= MAX_MESSAGE_LENGTH) {
+    await editMessageText(chatId, pickerMessage.message_id, response);
+  } else {
+    await editMessageText(chatId, pickerMessage.message_id, `Translated to ${lang.name} below 👇`);
+    await sendMessage(chatId, response, { replyTo: source.message_id });
+  }
 }
 
 /**
