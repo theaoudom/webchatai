@@ -30,7 +30,6 @@ const LANGUAGES = [
   { code: "zh", label: "中文", name: "Chinese" },
   { code: "ja", label: "日本語", name: "Japanese" },
   { code: "ko", label: "한국어", name: "Korean" },
-  { code: "th", label: "ไทย", name: "Thai" },
   { code: "vi", label: "Tiếng Việt", name: "Vietnamese" },
 ];
 
