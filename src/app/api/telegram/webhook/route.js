@@ -4,6 +4,8 @@ import {
   isValidCommand,
   generateAIResponse,
   generateSlideDeck,
+  SLIDES_MIN,
+  SLIDES_MAX,
 } from "../../../../service/aiCommands";
 import {
   sendMessage,
@@ -26,7 +28,8 @@ const HELP_TEXT =
   "/explain — explain code or text simply\n" +
   "/summarize — summarize the content\n" +
   "/translate — translate (pick a language, or e.g. `/translate khmer`)\n" +
-  "/slides — build a PowerPoint deck on a topic, e.g. `/slides The history of AI`\n\n" +
+  "/slides — build a PowerPoint deck, e.g. `/slides The history of AI` " +
+  "(add a number for length: `/slides 12 The history of AI`)\n\n" +
   "You can also type the text inline, e.g. `/ask How do I fix this Kotlin crash?`";
 
 // Languages offered by the /translate inline keyboard. `name` is the English
@@ -222,15 +225,29 @@ async function handleSlides(message, inlineText) {
     message.reply_to_message?.caption ||
     ""
   ).trim();
-  const topic = inlineText || repliedText;
+
+  // Optional leading count: "/slides 12 The history of AI" → 12 slides.
+  const { count: requestedCount, rest } = extractSlideCount(inlineText);
+  const topic = rest || repliedText;
 
   if (!topic) {
     await sendMessage(
       chatId,
-      "What should the slides be about? e.g. /slides The history of AI",
+      "What should the slides be about? e.g. /slides The history of AI\n" +
+        "Add a number for a specific length: /slides 12 The history of AI",
       { replyTo: message.message_id }
     );
     return;
+  }
+
+  // Clamp the requested count to a sane range; tell the user if we adjusted it.
+  let slideCount;
+  let countNote = "";
+  if (requestedCount !== null) {
+    slideCount = Math.min(Math.max(requestedCount, SLIDES_MIN), SLIDES_MAX);
+    if (slideCount !== requestedCount) {
+      countNote = ` (capped to ${slideCount}; range is ${SLIDES_MIN}–${SLIDES_MAX})`;
+    }
   }
 
   const limit = checkRateLimit(userId);
@@ -242,11 +259,14 @@ async function handleSlides(message, inlineText) {
 
   // Building a deck takes longer than a chat reply, so tell the user it's coming.
   await sendChatAction(chatId, "upload_document");
-  await sendMessage(chatId, "Building your slides… 📊", { replyTo: message.message_id });
+  const sizeText = slideCount ? `${slideCount}-slide ` : "";
+  await sendMessage(chatId, `Building your ${sizeText}slides…${countNote} 📊`, {
+    replyTo: message.message_id,
+  });
 
   let deck;
   try {
-    deck = await generateSlideDeck(topic);
+    deck = await generateSlideDeck(topic, { slideCount });
   } catch (err) {
     console.error("generateSlideDeck failed:", err.status || "", err.message);
     const msg =
@@ -271,6 +291,21 @@ async function handleSlides(message, inlineText) {
       replyTo: message.message_id,
     });
   }
+}
+
+/**
+ * Pull an optional leading slide count off /slides' inline text.
+ * "12 The history of AI" → { count: 12, rest: "The history of AI" }.
+ * Only a 1–2 digit leading number is treated as a count, so topics that begin
+ * with a year ("2025 in review") are left intact. Returns count null when none.
+ */
+function extractSlideCount(text) {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return { count: null, rest: "" };
+
+  const m = /^(\d{1,2})\b\s*(.*)$/s.exec(trimmed);
+  if (!m) return { count: null, rest: trimmed };
+  return { count: parseInt(m[1], 10), rest: m[2].trim() };
 }
 
 /**

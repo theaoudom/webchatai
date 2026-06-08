@@ -87,14 +87,24 @@ export const isValidCommand = (type) =>
 // (JSON) which the bot renders to a .pptx file and sends as a document. We use
 // Gemini's responseSchema so the model is forced to return parseable JSON.
 
-const SLIDES_SYSTEM =
-  BASE_PERSONA +
-  "\n\nYou are creating a presentation deck. Given the user's topic, produce a " +
-  "clear, well-structured slide deck. Write a short overall title, then 5–8 " +
-  "slides. Each slide has a short title and 2–5 concise bullet points (a few " +
-  "words to one line each — never long paragraphs). Start with an intro/agenda " +
-  "slide and end with a summary or conclusion slide. Use plain text only: no " +
-  "Markdown, no '*' or '#' characters, no emojis in the bullets.";
+// Bounds on how many content slides a user may request via "/slides <n> <topic>".
+export const SLIDES_MIN = 3;
+export const SLIDES_MAX = 30;
+
+// Built per-request so the caller can pin an exact slide count; without one the
+// model picks a sensible length.
+function slidesSystem(count) {
+  const countText = count ? `exactly ${count} slides` : "5 to 8 slides";
+  return (
+    BASE_PERSONA +
+    "\n\nYou are creating a presentation deck. Given the user's topic, produce a " +
+    `clear, well-structured slide deck. Write a short overall title, then ${countText}. ` +
+    "Each slide has a short title and 2–5 concise bullet points (a few " +
+    "words to one line each — never long paragraphs). Start with an intro/agenda " +
+    "slide and end with a summary or conclusion slide. Use plain text only: no " +
+    "Markdown, no '*' or '#' characters, no emojis in the bullets."
+  );
+}
 
 // JSON shape we force Gemini to return (Gemini structured-output schema).
 const SLIDES_SCHEMA = {
@@ -122,11 +132,13 @@ const SLIDES_SCHEMA = {
  * @param {string} topic - the presentation subject
  * @param {object} [options]
  * @param {AbortSignal} [options.signal]
+ * @param {number} [options.slideCount] - request an exact number of slides
+ *   (callers should clamp to [SLIDES_MIN, SLIDES_MAX]); omit to let the model choose
  * @returns {Promise<{title:string, subtitle?:string, slides:{title:string,bullets:string[]}[]}>}
  * @throws {Error} when the topic is empty, the API is unconfigured, or the API fails
  */
 export const generateSlideDeck = async (topic, options = {}) => {
-  const { signal } = options;
+  const { signal, slideCount } = options;
 
   const text = (topic || "").trim();
   if (!text) {
@@ -136,9 +148,12 @@ export const generateSlideDeck = async (topic, options = {}) => {
     throw new Error("Gemini API is not configured (missing key or URL)");
   }
 
+  const count =
+    Number.isInteger(slideCount) && slideCount > 0 ? slideCount : null;
+
   const body = JSON.stringify({
     contents: [{ role: "user", parts: [{ text }] }],
-    systemInstruction: { parts: [{ text: SLIDES_SYSTEM }] },
+    systemInstruction: { parts: [{ text: slidesSystem(count) }] },
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: SLIDES_SCHEMA,

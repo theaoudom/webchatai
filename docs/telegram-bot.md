@@ -46,6 +46,10 @@ inline text, the bot replies: _"Please reply to a message first…"_.
 `/slides` takes its topic from inline text (`/slides The history of AI`) or the
 replied-to message. Gemini returns a structured deck (forced JSON via
 `responseSchema`), which is rendered to a `.pptx` and sent with `sendDocument`.
+An optional leading number sets the length: `/slides 12 The history of AI`
+requests 12 slides (clamped to `SLIDES_MIN`–`SLIDES_MAX`, currently 3–30; the
+bot tells the user when a request is capped). A leading 3-or-more-digit number
+(e.g. a year, `/slides 2025 in review`) is treated as part of the topic.
 
 ## Environment variables
 
