@@ -82,6 +82,112 @@ function translateSystem(language) {
 export const isValidCommand = (type) =>
   typeof type === "string" && Object.prototype.hasOwnProperty.call(COMMANDS, type);
 
+// --- Slide decks (/slides) -------------------------------------------------
+// Unlike the text commands above, /slides asks Gemini for a STRUCTURED deck
+// (JSON) which the bot renders to a .pptx file and sends as a document. We use
+// Gemini's responseSchema so the model is forced to return parseable JSON.
+
+const SLIDES_SYSTEM =
+  BASE_PERSONA +
+  "\n\nYou are creating a presentation deck. Given the user's topic, produce a " +
+  "clear, well-structured slide deck. Write a short overall title, then 5–8 " +
+  "slides. Each slide has a short title and 2–5 concise bullet points (a few " +
+  "words to one line each — never long paragraphs). Start with an intro/agenda " +
+  "slide and end with a summary or conclusion slide. Use plain text only: no " +
+  "Markdown, no '*' or '#' characters, no emojis in the bullets.";
+
+// JSON shape we force Gemini to return (Gemini structured-output schema).
+const SLIDES_SCHEMA = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    subtitle: { type: "string" },
+    slides: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          bullets: { type: "array", items: { type: "string" } },
+        },
+        required: ["title", "bullets"],
+      },
+    },
+  },
+  required: ["title", "slides"],
+};
+
+/**
+ * Generate a structured slide deck for a topic using Gemini.
+ * @param {string} topic - the presentation subject
+ * @param {object} [options]
+ * @param {AbortSignal} [options.signal]
+ * @returns {Promise<{title:string, subtitle?:string, slides:{title:string,bullets:string[]}[]}>}
+ * @throws {Error} when the topic is empty, the API is unconfigured, or the API fails
+ */
+export const generateSlideDeck = async (topic, options = {}) => {
+  const { signal } = options;
+
+  const text = (topic || "").trim();
+  if (!text) {
+    throw new Error("Empty topic");
+  }
+  if (!API_KEY || !API_URL) {
+    throw new Error("Gemini API is not configured (missing key or URL)");
+  }
+
+  const body = JSON.stringify({
+    contents: [{ role: "user", parts: [{ text }] }],
+    systemInstruction: { parts: [{ text: SLIDES_SYSTEM }] },
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: SLIDES_SCHEMA,
+    },
+  });
+
+  const RETRYABLE = new Set([429, 500, 503]);
+  const MAX_RETRIES = 2;
+
+  let lastStatus;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-goog-api-key": API_KEY },
+      body,
+      signal,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!raw) {
+        throw new Error("Gemini returned an empty deck");
+      }
+      let deck;
+      try {
+        deck = JSON.parse(raw);
+      } catch {
+        throw new Error("Gemini returned an unparseable deck");
+      }
+      if (!deck?.title || !Array.isArray(deck.slides) || deck.slides.length === 0) {
+        throw new Error("Gemini returned a deck with no slides");
+      }
+      return deck;
+    }
+
+    lastStatus = response.status;
+    if (RETRYABLE.has(response.status) && attempt < MAX_RETRIES) {
+      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      continue;
+    }
+    break;
+  }
+
+  const err = new Error(`Gemini HTTP error: ${lastStatus}`);
+  err.status = lastStatus;
+  throw err;
+};
+
 // Formatting for chat surfaces (Telegram). Unlike the web chat — which renders
 // Markdown — Telegram shows messages as near-plain text, so '*' bullets and '#'
 // headings appear literally and look noisy. Tell the model to use blank lines /

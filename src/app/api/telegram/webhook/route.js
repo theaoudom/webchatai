@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
-import { COMMANDS, isValidCommand, generateAIResponse } from "../../../../service/aiCommands";
+import {
+  COMMANDS,
+  isValidCommand,
+  generateAIResponse,
+  generateSlideDeck,
+} from "../../../../service/aiCommands";
 import {
   sendMessage,
   sendChatAction,
+  sendDocument,
   answerCallbackQuery,
   editMessageText,
   MAX_MESSAGE_LENGTH,
 } from "../../../../service/telegram";
+import { buildPptx } from "../../../../service/slides";
 import { checkRateLimit } from "../../../../utils/rateLimiter";
 
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET;
@@ -18,7 +25,8 @@ const HELP_TEXT =
   "/fix — fix grammar & improve writing\n" +
   "/explain — explain code or text simply\n" +
   "/summarize — summarize the content\n" +
-  "/translate — translate (pick a language, or e.g. `/translate khmer`)\n\n" +
+  "/translate — translate (pick a language, or e.g. `/translate khmer`)\n" +
+  "/slides — build a PowerPoint deck on a topic, e.g. `/slides The history of AI`\n\n" +
   "You can also type the text inline, e.g. `/ask How do I fix this Kotlin crash?`";
 
 // Languages offered by the /translate inline keyboard. `name` is the English
@@ -111,6 +119,11 @@ async function handleMessage(message) {
     return;
   }
 
+  if (command === "slides") {
+    await handleSlides(message, inlineText);
+    return;
+  }
+
   if (!isValidCommand(command)) {
     await sendMessage(
       chatId,
@@ -194,6 +207,70 @@ async function handleMessage(message) {
   }
 
   await sendMessage(chatId, response, { replyTo: message.message_id });
+}
+
+/**
+ * /slides — generate a PowerPoint deck for a topic and send it as a document.
+ * Topic comes from the inline text ("/slides <topic>") or the replied-to message.
+ */
+async function handleSlides(message, inlineText) {
+  const chatId = message.chat.id;
+  const userId = message.from?.id ?? chatId;
+
+  const repliedText = (
+    message.reply_to_message?.text ||
+    message.reply_to_message?.caption ||
+    ""
+  ).trim();
+  const topic = inlineText || repliedText;
+
+  if (!topic) {
+    await sendMessage(
+      chatId,
+      "What should the slides be about? e.g. /slides The history of AI",
+      { replyTo: message.message_id }
+    );
+    return;
+  }
+
+  const limit = checkRateLimit(userId);
+  if (!limit.allowed) {
+    const wait = limit.retryAfter ? ` (try again in ${limit.retryAfter}s)` : "";
+    await sendMessage(chatId, `You're going too fast.${wait}`, { replyTo: message.message_id });
+    return;
+  }
+
+  // Building a deck takes longer than a chat reply, so tell the user it's coming.
+  await sendChatAction(chatId, "upload_document");
+  await sendMessage(chatId, "Building your slides… 📊", { replyTo: message.message_id });
+
+  let deck;
+  try {
+    deck = await generateSlideDeck(topic);
+  } catch (err) {
+    console.error("generateSlideDeck failed:", err.status || "", err.message);
+    const msg =
+      err.status === 429
+        ? "I'm getting a lot of requests right now. Please try again in a few seconds."
+        : AI_DOWN_MSG;
+    await sendMessage(chatId, msg, { replyTo: message.message_id });
+    return;
+  }
+
+  try {
+    const { buffer, filename } = await buildPptx(deck);
+    await sendDocument(chatId, buffer, filename, {
+      caption: deck.title,
+      replyTo: message.message_id,
+      contentType:
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    });
+  } catch (err) {
+    console.error("buildPptx/sendDocument failed:", err.message);
+    await sendMessage(chatId, "I built the slides but couldn't send the file. Please try again.", {
+      replyTo: message.message_id,
+    });
+  }
 }
 
 /**

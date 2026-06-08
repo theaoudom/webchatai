@@ -69,6 +69,46 @@ export async function sendMessage(chatId, text, { replyTo, parseMode = "Markdown
 }
 
 /**
+ * Upload a file to a chat (used by /slides to send the generated .pptx).
+ * Unlike the other methods this is a multipart/form-data upload, not JSON.
+ * @param {number|string} chatId
+ * @param {Buffer|Uint8Array} buffer - the file contents
+ * @param {string} filename - shown to the user; extension drives how Telegram displays it
+ * @param {object} [opts]
+ * @param {string} [opts.caption]
+ * @param {number} [opts.replyTo]
+ * @param {string} [opts.contentType]
+ */
+export async function sendDocument(
+  chatId,
+  buffer,
+  filename,
+  { caption, replyTo, contentType = "application/octet-stream" } = {}
+) {
+  if (!API_BASE) {
+    throw new Error("TELEGRAM_BOT_TOKEN is not configured");
+  }
+
+  const form = new FormData();
+  form.append("chat_id", String(chatId));
+  if (caption) form.append("caption", caption);
+  if (replyTo) {
+    form.append("reply_to_message_id", String(replyTo));
+    form.append("allow_sending_without_reply", "true");
+  }
+  // Node's global Blob accepts a Buffer/Uint8Array body.
+  form.append("document", new Blob([buffer], { type: contentType }), filename);
+
+  const res = await fetch(`${API_BASE}/sendDocument`, { method: "POST", body: form });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) {
+    const reason = data.description || `HTTP ${res.status}`;
+    throw new Error(`Telegram sendDocument failed: ${reason}`);
+  }
+  return data.result;
+}
+
+/**
  * Acknowledge an inline-keyboard button press (stops the loading spinner).
  * Fire-and-forget; never throws.
  */

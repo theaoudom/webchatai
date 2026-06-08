@@ -22,8 +22,9 @@ Two server routes were added to the existing Next.js app:
 
 Supporting modules:
 
-- `src/service/aiCommands.js` — command → prompt map + stateless `generateAIResponse()`.
-- `src/service/telegram.js` — `sendMessage` / `sendChatAction` (typing indicator, markdown, auto-chunking).
+- `src/service/aiCommands.js` — command → prompt map + stateless `generateAIResponse()`; `generateSlideDeck()` (structured JSON deck for `/slides`).
+- `src/service/slides.js` — renders a deck object into a `.pptx` buffer with `pptxgenjs` (pure JS, no headless browser).
+- `src/service/telegram.js` — `sendMessage` / `sendChatAction` / `sendDocument` (typing indicator, markdown, auto-chunking, file upload).
 - `src/utils/rateLimiter.js` — per-user cooldown + per-minute limit (in-memory anti-spam).
 
 ## Commands
@@ -35,11 +36,16 @@ Supporting modules:
 | `/explain`    | Explain code or text simply       |
 | `/summarize`  | Summarize content with key points |
 | `/translate`  | Translate text to English         |
+| `/slides`     | Build a PowerPoint (`.pptx`) deck on a topic, sent as a document |
 | `/start` `/help` | Show usage help                |
 
 Usage: **reply** to a message and send a command, e.g. `/ask`. You can also pass
 text inline: `/ask How do I fix this Kotlin crash?`. With neither a reply nor
 inline text, the bot replies: _"Please reply to a message first…"_.
+
+`/slides` takes its topic from inline text (`/slides The history of AI`) or the
+replied-to message. Gemini returns a structured deck (forced JSON via
+`responseSchema`), which is rendered to a `.pptx` and sent with `sendDocument`.
 
 ## Environment variables
 
@@ -101,7 +107,8 @@ TELEGRAM_MAX_PER_MINUTE=12
        {"command":"fix","description":"Fix grammar & improve writing"},
        {"command":"explain","description":"Explain code or text simply"},
        {"command":"summarize","description":"Summarize content"},
-       {"command":"translate","description":"Translate (pick a language, or e.g. /translate khmer)"}
+       {"command":"translate","description":"Translate (pick a language, or e.g. /translate khmer)"},
+       {"command":"slides","description":"Build a PowerPoint deck on a topic"}
      ]}'
    ```
 
