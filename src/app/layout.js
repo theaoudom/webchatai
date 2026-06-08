@@ -1,8 +1,12 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import { ThemeProvider } from '../context/ThemeContext';
 import "./globals.css";
 import Head from 'next/head';
+
+// Google AdSense publisher id (also exposed via the metadata `other` tag below).
+const ADSENSE_CLIENT = "ca-pub-5602570319866246";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +57,15 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>{children}</ThemeProvider>
+        {/* Google AdSense loader — required by the "connect your site" step and
+            for serving ads once the account is approved. */}
+        <Script
+          id="adsbygoogle-init"
+          async
+          strategy="afterInteractive"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+        />
         <Analytics />
       </body>
     </html>
