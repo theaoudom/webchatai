@@ -37,6 +37,7 @@ Supporting modules:
 | `/summarize`  | Summarize content with key points |
 | `/translate`  | Translate text to English         |
 | `/slides`     | Build a PowerPoint (`.pptx`) deck on a topic, sent as a document |
+| `/alarm`      | Set a reminder; the bot messages you back at the chosen time |
 | `/start` `/help` | Show usage help                |
 
 Usage: **reply** to a message and send a command, e.g. `/ask`. You can also pass
@@ -50,6 +51,15 @@ An optional leading number sets the length: `/slides 12 The history of AI`
 requests 12 slides (clamped to `SLIDES_MIN`–`SLIDES_MAX`, currently 3–30; the
 bot tells the user when a request is capped). A leading 3-or-more-digit number
 (e.g. a year, `/slides 2025 in review`) is treated as part of the topic.
+
+`/alarm` sets a reminder. The text (`/alarm go to eat 4:00 PM`, `/alarm in 30
+min stand up`, or a reply + `/alarm in 1 hour`) is parsed by Gemini into a clean
+reminder message and an absolute fire time (interpreted in `ALARM_TIMEZONE`,
+default `Asia/Phnom_Penh`). Because serverless has no always-on timer, the bot
+schedules an **Upstash QStash** callback to `/api/telegram/alarm` for that time;
+QStash POSTs us back at the fire time and we send the reminder. Reminders can be
+set up to `ALARM_MAX_DAYS` ahead (default 30). See **Reminders (QStash) setup**
+below.
 
 ## Environment variables
 
@@ -67,6 +77,16 @@ TELEGRAM_WEBHOOK_SECRET=a-long-random-string   # verified on every webhook call
 # Optional rate-limit tuning (defaults shown):
 TELEGRAM_COOLDOWN_MS=3000
 TELEGRAM_MAX_PER_MINUTE=12
+
+# Reminders (/alarm) — Upstash QStash. Get these from the QStash dashboard.
+QSTASH_TOKEN=qstash_token                 # used to schedule reminder callbacks
+QSTASH_CURRENT_SIGNING_KEY=sig_xxx        # used to verify incoming callbacks
+QSTASH_NEXT_SIGNING_KEY=sig_yyy           # rotation key, also from the dashboard
+APP_BASE_URL=https://www.get-domai.xyz    # public URL QStash calls back (no trailing slash)
+
+# Optional /alarm tuning (defaults shown):
+ALARM_TIMEZONE=Asia/Phnom_Penh
+ALARM_MAX_DAYS=30
 ```
 
 > The Gemini key currently uses the `NEXT_PUBLIC_` prefix to match the existing
@@ -112,9 +132,32 @@ TELEGRAM_MAX_PER_MINUTE=12
        {"command":"explain","description":"Explain code or text simply"},
        {"command":"summarize","description":"Summarize content"},
        {"command":"translate","description":"Translate (pick a language, or e.g. /translate khmer)"},
-       {"command":"slides","description":"Build a PowerPoint deck on a topic"}
+       {"command":"slides","description":"Build a PowerPoint deck on a topic"},
+       {"command":"alarm","description":"Set a reminder, e.g. /alarm go to eat 4:00 PM"}
      ]}'
    ```
+
+6. **(Reminders) set up QStash** so `/alarm` can fire callbacks — see below.
+
+## Reminders (QStash) setup
+
+`/alarm` relies on [Upstash QStash](https://upstash.com/docs/qstash) as the
+external scheduler (serverless has no always-on timer). Without it, `/alarm`
+replies _"Reminders aren't set up on this bot yet."_
+
+1. Create a free account at [console.upstash.com](https://console.upstash.com/qstash).
+2. From the QStash dashboard copy the **token** and the **current** and **next
+   signing keys** into `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`,
+   `QSTASH_NEXT_SIGNING_KEY`.
+3. Set `APP_BASE_URL` to your public site (no trailing slash). QStash must be
+   able to reach `${APP_BASE_URL}/api/telegram/alarm` — for local testing,
+   point it at a tunnel (`ngrok`) URL.
+
+Flow: webhook parses `/alarm` → schedules a QStash message with `notBefore` =
+fire time → at that time QStash POSTs `/api/telegram/alarm` (signed) → the route
+verifies the signature and sends the reminder. No database needed; QStash holds
+the pending reminder. Setting a reminder is fire-and-forget — there is currently
+no `/cancel` (that would need a store to map chats → message IDs).
 
 ## Testing the backend endpoint directly
 

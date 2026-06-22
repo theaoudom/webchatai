@@ -56,6 +56,7 @@ Telegram → POST /api/telegram/webhook → aiCommands (Gemini) → telegram.js 
 - **`src/app/api/telegram/webhook/route.js`** — the orchestrator. Parses commands (`parseCommand` handles `/cmd@BotName` group syntax), pulls content from the **replied-to message** and/or inline text, runs rate-limiting, calls Gemini, and replies. **Always returns HTTP 200** so Telegram never retries; user-facing errors are sent into the chat instead. Verifies `x-telegram-bot-api-secret-token` against `TELEGRAM_WEBHOOK_SECRET`.
 - `/translate` shows an inline **language-picker keyboard**; button presses arrive as `callback_query` updates (`handleCallback`) — so the webhook must be registered with `allowed_updates` including `callback_query`.
 - `/slides` → `generateSlideDeck()` returns structured JSON (Gemini `responseSchema`), then `src/service/slides.js` renders it to a `.pptx` buffer with `pptxgenjs` (pure-JS mode, no headless browser) and `telegram.js#sendDocument` uploads it. Optional leading count: `/slides 12 <topic>` (clamped to `SLIDES_MIN`–`SLIDES_MAX`).
+- `/alarm` → reminders. Serverless has no always-on timer, so instead of a `setTimeout` the webhook parses the request with `src/service/alarms.js#parseAlarm` (Gemini → clean reminder text + absolute fire time, interpreted in `ALARM_TIMEZONE`), then schedules an **Upstash QStash** callback (`src/service/qstash.js`) to `POST /api/telegram/alarm` at the fire time. That route verifies the QStash signature and sends the reminder. QStash holds the pending reminder (no DB). Requires `QSTASH_*` env vars; without them `/alarm` tells the user reminders aren't set up. No `/cancel` yet (would need a chat→messageId store).
 - **`src/service/telegram.js`** — Bot API wrapper. `sendMessage` auto-chunks at `MAX_MESSAGE_LENGTH` (4000) and **retries as plain text if Markdown parsing fails**.
 - **`src/utils/rateLimiter.js`** — in-memory per-user cooldown + per-minute cap. State is per-process, so on serverless it resets on cold start and is not shared across instances (acceptable anti-spam, not a global limit).
 
@@ -86,4 +87,11 @@ TELEGRAM_BOT_TOKEN            # bot
 TELEGRAM_WEBHOOK_SECRET       # verified on every webhook call
 TELEGRAM_COOLDOWN_MS          # optional, default 3000
 TELEGRAM_MAX_PER_MINUTE       # optional, default 12
+
+QSTASH_TOKEN                  # /alarm reminders: schedule callbacks (Upstash QStash)
+QSTASH_CURRENT_SIGNING_KEY    # /alarm: verify incoming QStash callbacks
+QSTASH_NEXT_SIGNING_KEY       # /alarm: signing-key rotation
+APP_BASE_URL                  # /alarm: public URL QStash calls back, default https://www.get-domai.xyz
+ALARM_TIMEZONE                # optional, default Asia/Phnom_Penh
+ALARM_MAX_DAYS                # optional, default 30
 ```

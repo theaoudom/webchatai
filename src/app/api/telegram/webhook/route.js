@@ -16,6 +16,8 @@ import {
   MAX_MESSAGE_LENGTH,
 } from "../../../../service/telegram";
 import { buildPptx } from "../../../../service/slides";
+import { parseAlarm, formatFireTime } from "../../../../service/alarms";
+import { scheduleAlarmCallback, isQstashConfigured } from "../../../../service/qstash";
 import { checkRateLimit } from "../../../../utils/rateLimiter";
 
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET;
@@ -29,7 +31,8 @@ const HELP_TEXT =
   "/summarize — summarize the content\n" +
   "/translate — translate (pick a language, or e.g. `/translate khmer`)\n" +
   "/slides — build a PowerPoint deck, e.g. `/slides The history of AI` " +
-  "(add a number for length: `/slides 12 The history of AI`)\n\n" +
+  "(add a number for length: `/slides 12 The history of AI`)\n" +
+  "/alarm — set a reminder, e.g. `/alarm go to eat 4:00 PM` or `/alarm in 30 min stand up`\n\n" +
   "You can also type the text inline, e.g. `/ask How do I fix this Kotlin crash?`";
 
 // Languages offered by the /translate inline keyboard. `name` is the English
@@ -124,6 +127,11 @@ async function handleMessage(message) {
 
   if (command === "slides") {
     await handleSlides(message, inlineText);
+    return;
+  }
+
+  if (command === "alarm") {
+    await handleAlarm(message, inlineText);
     return;
   }
 
@@ -291,6 +299,100 @@ async function handleSlides(message, inlineText) {
       replyTo: message.message_id,
     });
   }
+}
+
+/**
+ * /alarm — set a reminder. The user's text ("go to eat 4:00 PM", "in 30 min
+ * stand up") is parsed by Gemini into a clean reminder message + an absolute
+ * fire time, then handed to QStash, which calls /api/telegram/alarm back at
+ * that time to deliver the reminder. Optionally combines a replied-to message
+ * as the thing to be reminded about.
+ */
+async function handleAlarm(message, inlineText) {
+  const chatId = message.chat.id;
+  const userId = message.from?.id ?? chatId;
+
+  const repliedText = (
+    message.reply_to_message?.text ||
+    message.reply_to_message?.caption ||
+    ""
+  ).trim();
+
+  // Timing instruction comes from the inline text; if the user replied to a
+  // message, fold that in as the subject of the reminder.
+  const request =
+    repliedText && inlineText
+      ? `${inlineText}\nReminder about this message: "${repliedText}"`
+      : inlineText || repliedText;
+
+  if (!request) {
+    await sendMessage(
+      chatId,
+      "What and when should I remind you?\n" +
+        "e.g. /alarm go to eat 4:00 PM\n" +
+        "or /alarm in 30 minutes stand up and stretch",
+      { replyTo: message.message_id }
+    );
+    return;
+  }
+
+  if (!isQstashConfigured()) {
+    await sendMessage(chatId, "Reminders aren't set up on this bot yet.", {
+      replyTo: message.message_id,
+    });
+    return;
+  }
+
+  const limit = checkRateLimit(userId);
+  if (!limit.allowed) {
+    const wait = limit.retryAfter ? ` (try again in ${limit.retryAfter}s)` : "";
+    await sendMessage(chatId, `You're going too fast.${wait}`, { replyTo: message.message_id });
+    return;
+  }
+
+  await sendChatAction(chatId, "typing");
+
+  let parsed;
+  try {
+    parsed = await parseAlarm(request);
+  } catch (err) {
+    console.error("parseAlarm failed:", err.status || "", err.message);
+    const msg =
+      err.status === 429
+        ? "I'm getting a lot of requests right now. Please try again in a few seconds."
+        : AI_DOWN_MSG;
+    await sendMessage(chatId, msg, { replyTo: message.message_id });
+    return;
+  }
+
+  if (!parsed.ok) {
+    await sendMessage(
+      chatId,
+      `I couldn't set that reminder: ${parsed.error}.\n` +
+        "Try e.g. /alarm go to eat 4:00 PM",
+      { replyTo: message.message_id }
+    );
+    return;
+  }
+
+  try {
+    await scheduleAlarmCallback({
+      body: { chatId, reminder: parsed.reminder, replyTo: message.message_id },
+      notBefore: Math.floor(parsed.fireAtMs / 1000),
+    });
+  } catch (err) {
+    console.error("scheduleAlarmCallback failed:", err.message);
+    await sendMessage(chatId, "I couldn't schedule that reminder. Please try again later.", {
+      replyTo: message.message_id,
+    });
+    return;
+  }
+
+  await sendMessage(
+    chatId,
+    `⏰ Got it. I'll remind you on ${formatFireTime(parsed.fireAtMs)}:\n${parsed.reminder}`,
+    { replyTo: message.message_id }
+  );
 }
 
 /**
